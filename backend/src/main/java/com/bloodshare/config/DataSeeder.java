@@ -1,0 +1,59 @@
+package com.bloodshare.config;
+
+import com.bloodshare.entity.AdminUser;
+import com.bloodshare.entity.BloodStock;
+import com.bloodshare.repository.AdminUserRepository;
+import com.bloodshare.repository.BloodStockRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class DataSeeder implements CommandLineRunner {
+    public static final List<String> HOSPITALS = List.of(
+            "Colombo General Hospital",
+            "Sri Jayewardenepura General Hospital",
+            "National Hospital of Sri Lanka",
+            "Kandy Teaching Hospital",
+            "Ruhuna University Teaching Hospital",
+            "Jaffna Teaching Hospital",
+            "Anuradhapura Teaching Hospital",
+            "Batticaloa Teaching Hospital",
+            "Negombo General Hospital",
+            "Matara General Hospital"
+    );
+
+    private final AdminUserRepository adminUserRepository;
+    private final BloodStockRepository bloodStockRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public DataSeeder(
+            AdminUserRepository adminUserRepository,
+            BloodStockRepository bloodStockRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.adminUserRepository = adminUserRepository;
+        this.bloodStockRepository = bloodStockRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    public void run(String... args) {
+        if (adminUserRepository.count() == 0) {
+            AdminUser admin = new AdminUser();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            adminUserRepository.save(admin);
+        }
+
+        for (String hospital : HOSPITALS) {
+            if (bloodStockRepository.findByHospitalName(hospital).isEmpty()) {
+                BloodStock stock = new BloodStock();
+                stock.setHospitalName(hospital);
+                bloodStockRepository.save(stock);
+            }
+        }
+    }
+}

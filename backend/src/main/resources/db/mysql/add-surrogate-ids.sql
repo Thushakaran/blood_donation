@@ -1,0 +1,9 @@
+-- One-time migration for the legacy blood_donation schema. Preserves all existing rows.
+ALTER TABLE admin
+    ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+ALTER TABLE blood_stock
+    ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
+
+ALTER TABLE inbox
+    ADD COLUMN id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
