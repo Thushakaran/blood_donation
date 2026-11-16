@@ -4,6 +4,7 @@ import com.bloodshare.entity.AdminUser;
 import com.bloodshare.entity.BloodStock;
 import com.bloodshare.repository.AdminUserRepository;
 import com.bloodshare.repository.BloodStockRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,12 @@ public class DataSeeder implements CommandLineRunner {
     private final BloodStockRepository bloodStockRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.admin.username}")
+    private String adminUsername;
+
+    @Value("${app.admin.password}")
+    private String adminPassword;
+
     public DataSeeder(
             AdminUserRepository adminUserRepository,
             BloodStockRepository bloodStockRepository,
@@ -43,8 +50,8 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (adminUserRepository.count() == 0) {
             AdminUser admin = new AdminUser();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setUsername(adminUsername);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
             adminUserRepository.save(admin);
         }
 

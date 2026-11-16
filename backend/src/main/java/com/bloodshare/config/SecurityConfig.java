@@ -39,6 +39,10 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET,
+                                "/", "/index.html", "/assets/**", "/favicon.svg", "/icons.svg",
+                                "/about", "/contact", "/admin", "/register", "/need-blood", "/search",
+                                "/dashboard", "/dashboard/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/donors").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/donors/search").permitAll()

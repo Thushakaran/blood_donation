@@ -19,17 +19,17 @@ cd backend
 mvnw.cmd spring-boot:run
 ```
 
-The API starts at `http://localhost:8081` (port **8081**, because 8080 is often taken) and uses an H2 file database under `backend/data/`.
+The API starts at `http://localhost:8081` (or the value of `PORT`) and uses an H2 file database under `backend/data/`.
 
-To use the existing MySQL `blood_donation` database:
+To connect to MySQL, set these environment variables:
 
-```bat
-mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+```text
+SPRING_DATASOURCE_URL=jdbc:mysql://<host>:3306/blood_donation
+SPRING_DATASOURCE_USERNAME=<database-user>
+SPRING_DATASOURCE_PASSWORD=<database-password>
 ```
 
-Set `DB_USER` and `DB_PASSWORD` if they are not `root` / empty.
-
-Default admin login: `admin` / `admin123`
+The local default admin login is `admin` / `admin123`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to override it.
 
 ### Frontend
 
@@ -40,6 +40,12 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+### Deploy to Render
+
+Push the repository to GitHub, then create a Render Blueprint from the repository. The root `render.yaml` deploys a single Docker web service that builds the React frontend and Spring Boot backend together, so the service does not run `bun install`.
+
+The Blueprint generates `ADMIN_PASSWORD` and `JWT_SECRET`. Find the generated admin password in the service's environment settings; the username is `admin`. The free Blueprint uses an in-memory H2 database for demo use, so its data is lost when the service restarts or redeploys. Configure a persistent external database with the `SPRING_DATASOURCE_*` environment variables before using it for real donor data.
 
 ## Features
 
