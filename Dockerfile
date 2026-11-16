@@ -16,4 +16,4 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=backend-build /app/backend/target/blood-share-1.0.0.jar ./app.jar
 EXPOSE 8081
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60.0", "-jar", "/app/app.jar"]
