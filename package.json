@@ -1,0 +1,13 @@
+{
+  "name": "blood-share",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "vite frontend --config frontend/vite.config.js --host 0.0.0.0",
+    "build": "vite build frontend --config frontend/vite.config.js",
+    "lint": "oxlint frontend/src",
+    "preview": "vite preview frontend --config frontend/vite.config.js --host 0.0.0.0"
+  }
+}

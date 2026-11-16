@@ -34,12 +34,11 @@ The local default admin login is `admin` / `admin123`. Set `ADMIN_USERNAME` and 
 ### Frontend
 
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5174`.
+These commands run from the project root (including in Google AI Studio). Open `http://localhost:5174`. To run the frontend standalone, use the same commands from `frontend/`.
 
 ### Deploy to Render
 
