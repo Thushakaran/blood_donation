@@ -14,7 +14,9 @@ import Inbox from './pages/Inbox';
 import ActiveDonors from './pages/ActiveDonors';
 import InactiveDonors from './pages/InactiveDonors';
 import BloodRequests from './pages/BloodRequests';
+import BloodRequestDetail from './pages/BloodRequestDetail';
 import BloodStock from './pages/BloodStock';
+import UserProfile from './pages/UserProfile';
 
 export default function App() {
   return (
@@ -36,7 +38,9 @@ export default function App() {
             <Route path="active-donors" element={<ActiveDonors />} />
             <Route path="inactive-donors" element={<InactiveDonors />} />
             <Route path="requests" element={<BloodRequests />} />
+            <Route path="requests/:id" element={<BloodRequestDetail />} />
             <Route path="stock" element={<BloodStock />} />
+            <Route path="profile" element={<UserProfile />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

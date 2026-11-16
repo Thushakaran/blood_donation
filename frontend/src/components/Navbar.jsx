@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { DropletFillIcon, MenuIcon, XIcon } from './Icons';
 
-const links = [
+const navLinks = [
   { to: '/', label: 'Home' },
-  { to: '/about', label: 'About Us' },
-  { to: '/contact', label: 'Contact Us' },
+  { to: '/search', label: 'Find Donors' },
+  { to: '/need-blood', label: 'Request Blood' },
+  { to: '/about', label: 'About' },
+  { to: '/contact', label: 'Contact' },
   { to: '/admin', label: 'Admin' },
 ];
 
@@ -12,35 +15,84 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-rose-800 text-white shadow">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-lg font-semibold tracking-wide">
-          Blood Share
-        </Link>
-        <button
-          className="rounded-md p-2 md:hidden"
-          onClick={() => setOpen((value) => !value)}
-          aria-label="Toggle menu"
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-lg font-bold tracking-tight text-slate-900"
         >
-          <span className="mb-1 block h-0.5 w-6 bg-white" />
-          <span className="mb-1 block h-0.5 w-6 bg-white" />
-          <span className="block h-0.5 w-6 bg-white" />
-        </button>
-        <nav className={`${open ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col gap-2 bg-rose-800 px-4 py-3 md:static md:flex md:flex-row md:gap-6 md:p-0`}>
-          {links.map((link) => (
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white">
+            <DropletFillIcon className="h-4 w-4" />
+          </span>
+          <span className="font-display">Blood Share</span>
+        </Link>
+
+        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary navigation">
+          {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
-              onClick={() => setOpen(false)}
+              end={link.to === '/'}
               className={({ isActive }) =>
-                `rounded-md px-2 py-1 text-sm font-medium ${isActive ? 'bg-white/15' : 'hover:bg-white/10'}`
+                `shrink-0 whitespace-nowrap py-1 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'border-b-2 border-red-600 text-red-600'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`
               }
             >
               {link.label}
             </NavLink>
           ))}
         </nav>
+
+        <div className="flex shrink-0 items-center gap-3">
+          <Link
+            to="/register"
+            className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:inline-flex"
+          >
+            Donate Blood
+          </Link>
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition-colors hover:bg-slate-50 md:hidden"
+            onClick={() => setOpen((value) => !value)}
+            aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={open}
+          >
+            {open ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
+
+      {open ? (
+        <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
+          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === '/'}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive ? 'bg-red-50 text-red-700' : 'text-slate-700 hover:bg-slate-50'
+                  }`
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+            <Link
+              to="/register"
+              onClick={() => setOpen(false)}
+              className="mt-2 flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+            >
+              Donate Blood
+            </Link>
+          </nav>
+        </div>
+      ) : null}
     </header>
   );
 }
