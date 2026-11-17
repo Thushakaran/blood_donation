@@ -48,12 +48,14 @@ export default function Navbar() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <Link
-            to={isAdmin ? '/dashboard' : '/login'}
-            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:inline-flex lg:px-4"
-          >
-            {isAdmin ? 'Dashboard' : 'Staff Portal'}
-          </Link>
+          {isAdmin ? (
+            <Link
+              to="/dashboard"
+              className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:inline-flex lg:px-4"
+            >
+              Dashboard
+            </Link>
+          ) : null}
           <Link
             to="/register"
             className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-red-700 sm:inline-flex lg:px-4"
@@ -90,13 +92,15 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
-            <Link
-              to={isAdmin ? '/dashboard' : '/login'}
-              onClick={() => setOpen(false)}
-              className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              {isAdmin ? 'Dashboard' : 'Staff Portal'}
-            </Link>
+            {isAdmin ? (
+              <Link
+                to="/dashboard"
+                onClick={() => setOpen(false)}
+                className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Dashboard
+              </Link>
+            ) : null}
             <Link
               to="/register"
               onClick={() => setOpen(false)}

@@ -16,7 +16,7 @@ export default function Footer() {
               <span className="font-display tracking-tight">Blood Share</span>
             </Link>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400">
-              A clinical blood donor registry and hospital inventory coordination network connecting screened volunteer donors with 10 regional medical centers across Sri Lanka.
+              A clinical blood donor registry and hospital inventory coordination network connecting screened volunteer donors with regional medical centers across Sri Lanka.
             </p>
           </div>
 
