@@ -63,11 +63,27 @@ const PAGE_TITLES = {
 
 export default function DashboardLayout() {
   const { isAdmin, isSuperAdmin, role, hospitalName, user, logout } = useAuth();
+  const avatarStorageKey = `bloodShareAvatar:${user || 'default'}`;
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [avatarSrc, setAvatarSrc] = useState(() => localStorage.getItem(avatarStorageKey) || coordinatorAvatar);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const storedAvatar = localStorage.getItem(avatarStorageKey);
+    if (!storedAvatar) api.getProfile().then((profile) => {
+      if (profile.avatarUrl) setAvatarSrc(profile.avatarUrl);
+    }).catch(() => {});
+    const handleAvatarChange = (event) => {
+      setAvatarSrc(event.detail || coordinatorAvatar);
+      setAvatarFailed(false);
+    };
+    window.addEventListener('profile-avatar-changed', handleAvatarChange);
+    return () => window.removeEventListener('profile-avatar-changed', handleAvatarChange);
+  }, [isAdmin, avatarStorageKey]);
 
   async function refreshNotifications() {
     const rows = await api.notifications();
@@ -186,7 +202,7 @@ export default function DashboardLayout() {
             </div>
           ) : (
             <img
-              src={coordinatorAvatar}
+              src={avatarSrc}
               alt="Coordinator avatar"
               referrerPolicy="no-referrer"
               onError={() => setAvatarFailed(true)}

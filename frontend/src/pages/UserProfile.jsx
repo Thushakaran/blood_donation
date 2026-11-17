@@ -5,8 +5,11 @@ import StatusBadge from '../components/StatusBadge';
 import { BLOOD_GROUPS, HOSPITALS } from '../constants';
 import coordinatorAvatar from '../assets/images/medical_coordinator_avatar_1794828548734.jpg';
 import { CheckCircleIcon } from '../components/Icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function UserProfile() {
+  const { user } = useAuth();
+  const avatarStorageKey = `bloodShareAvatar:${user || 'default'}`;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -18,7 +21,10 @@ export default function UserProfile() {
     api
       .getProfile()
       .then((data) => {
-        if (active) setProfile(data);
+        if (active) {
+          const savedAvatar = localStorage.getItem(avatarStorageKey);
+          setProfile({ ...data, avatarUrl: savedAvatar || data.avatarUrl || '' });
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -27,7 +33,7 @@ export default function UserProfile() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [avatarStorageKey]);
 
   async function handleSave(event) {
     event.preventDefault();
@@ -40,6 +46,58 @@ export default function UserProfile() {
       setStatus({ type: 'success', message: res.message || 'Profile updated successfully' });
     } catch (err) {
       setStatus({ type: 'error', message: err.message || 'Failed to update profile' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAvatarChange(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setStatus({ type: 'error', message: 'Choose an image file.' });
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setStatus({ type: 'error', message: 'Choose an image smaller than 1 MB.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => setStatus({ type: 'error', message: 'Could not read that image.' });
+    reader.onload = async () => {
+      if (typeof reader.result !== 'string') return;
+      setSaving(true);
+      setStatus({ type: '', message: '' });
+      try {
+        const result = await api.updateProfile({ ...profile, avatarUrl: reader.result });
+        localStorage.setItem(avatarStorageKey, reader.result);
+        setProfile(result.profile);
+        setAvatarFailed(false);
+        window.dispatchEvent(new CustomEvent('profile-avatar-changed', { detail: reader.result }));
+        setStatus({ type: 'success', message: 'Profile photo updated.' });
+      } catch (err) {
+        setStatus({ type: 'error', message: err.message || 'Could not update profile photo.' });
+      } finally {
+        setSaving(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function resetAvatar() {
+    setSaving(true);
+    setStatus({ type: '', message: '' });
+    try {
+      const result = await api.updateProfile({ ...profile, avatarUrl: '' });
+      localStorage.removeItem(avatarStorageKey);
+      setProfile(result.profile);
+      setAvatarFailed(false);
+      window.dispatchEvent(new CustomEvent('profile-avatar-changed', { detail: '' }));
+      setStatus({ type: 'success', message: 'Profile photo reset to the default.' });
+    } catch (err) {
+      setStatus({ type: 'error', message: err.message || 'Could not reset profile photo.' });
     } finally {
       setSaving(false);
     }
@@ -76,7 +134,7 @@ export default function UserProfile() {
                 </div>
               ) : (
                 <img
-                  src={coordinatorAvatar}
+                  src={profile.avatarUrl || coordinatorAvatar}
                   alt={profile.fullName}
                   referrerPolicy="no-referrer"
                   onError={() => setAvatarFailed(true)}
@@ -87,6 +145,14 @@ export default function UserProfile() {
                 <h2 className="text-base font-semibold text-slate-900">{profile.fullName}</h2>
                 <p className="text-xs text-slate-500">{profile.role}</p>
                 <p className="mt-1 font-mono text-xs text-slate-400">ID: {profile.donorId}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <label className={`cursor-pointer text-xs font-semibold text-red-600 hover:text-red-700 ${saving ? 'pointer-events-none opacity-60' : ''}`}>
+                    {saving ? 'Saving photo…' : 'Change profile picture'}
+                    <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} disabled={saving} />
+                  </label>
+                  {profile.avatarUrl && <button type="button" onClick={resetAvatar} disabled={saving} className="text-xs text-slate-500 hover:text-slate-800 disabled:opacity-50">Reset</button>}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">Image files up to 1 MB</p>
               </div>
             </div>
 
