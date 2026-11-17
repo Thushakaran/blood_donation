@@ -45,6 +45,27 @@ public class DashboardController {
     public Map<String, Object> analytics() {
         List<Map<String, Object>> byGroup = BloodStockTotals.byGroup(bloodStockRepository.findAll());
         long totalUnits = BloodStockTotals.total(byGroup);
-        return Map.of("stockByGroup", byGroup, "totalUnits", totalUnits, "monthlyDonations", List.of(), "notifications", List.of(), "recentActivities", List.of(), "donationHistory", List.of(), "stockHistory", List.of());
+        List<Map<String, Object>> notifications = new java.util.ArrayList<>();
+        byGroup.stream().filter(group -> !"Optimal".equals(group.get("status"))).forEach(group -> notifications.add(Map.of(
+                "id", "stock-" + group.get("bloodGroup"),
+                "title", group.get("bloodGroup") + " blood stock " + group.get("status"),
+                "detail", group.get("units") + " units available across the network",
+                "severity", "Critical".equals(group.get("status")) ? "critical" : "warning",
+                "to", "/dashboard/stock")));
+        bloodRequestRepository.findAll().stream()
+                .filter(request -> "urgent".equalsIgnoreCase(request.getUrgency()) && !"Fulfilled".equals(request.getStatus()))
+                .limit(5).forEach(request -> notifications.add(Map.of(
+                        "id", "request-" + request.getId(), "title", "Urgent blood request",
+                        "detail", request.getBloodGroupType() + " needed at " + request.getHospitalAddress(),
+                        "severity", "critical", "to", "/dashboard/requests/" + request.getId())));
+        long pendingDonors = donorRepository.countByActiveFalse();
+        if (pendingDonors > 0) notifications.add(Map.of(
+                "id", "pending-donors", "title", "Donors awaiting verification",
+                "detail", pendingDonors + " registration(s) need review", "severity", "warning",
+                "to", "/dashboard/inactive-donors"));
+
+        return Map.of("stockByGroup", byGroup, "totalUnits", totalUnits,
+                "monthlyDonations", List.of(), "notifications", notifications,
+                "recentActivities", List.of(), "donationHistory", List.of(), "stockHistory", List.of());
     }
 }

@@ -13,7 +13,7 @@ public final class BloodStockTotals {
     public static List<Map<String, Object>> byGroup(List<BloodStock> stock) {
         return java.util.stream.IntStream.range(0, GROUPS.size()).mapToObj(index -> {
             long units = stock.stream().mapToLong(row -> unitsFor(row, index)).sum();
-            String status = units <= 10 ? "Critical" : units <= 30 ? "Low Stock" : "Adequate";
+            String status = units < 25 ? "Critical" : units < 50 ? "Low Stock" : "Optimal";
             return Map.<String, Object>of("bloodGroup", GROUPS.get(index), "units", units, "status", status);
         }).toList();
     }
