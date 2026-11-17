@@ -15,10 +15,9 @@ export default function BloodRequestDetail() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    api
-      .getRequest(id)
-      .then((data) => {
-        if (active) setRequest(data);
+    Promise.all([api.getRequest(id), api.activeDonors()])
+      .then(([data, donors]) => {
+        if (active) setRequest({ ...data, matchingDonors: donors.filter((donor) => donor.bloodGroup === data.bloodGroupType && donor.available !== false) });
       })
       .catch((err) => {
         if (active) setError(err.message || 'Request not found');

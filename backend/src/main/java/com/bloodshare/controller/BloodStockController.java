@@ -27,6 +27,9 @@ public class BloodStockController {
 
     @PutMapping
     public ApiMessage update(@Valid @RequestBody StockUpdateRequest request) {
+        if (!"increase".equalsIgnoreCase(request.action()) && !"decrease".equalsIgnoreCase(request.action())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action must be increase or decrease");
+        }
         BloodStock stock = bloodStockRepository.findByHospitalName(request.hospitalName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Hospital not found"));
 

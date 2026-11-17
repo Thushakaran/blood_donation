@@ -33,6 +33,7 @@ public class BloodRequestController {
         request.setEmail(dto.email());
         request.setContactNumber(dto.contactNumber());
         request.setReason(dto.reason());
+        request.setUrgency(dto.urgency() == null ? "normal" : dto.urgency());
         bloodRequestRepository.save(request);
         return new ApiMessage("Request successful");
     }
@@ -40,6 +41,22 @@ public class BloodRequestController {
     @GetMapping
     public List<BloodRequest> list() {
         return bloodRequestRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public BloodRequest get(@PathVariable Long id) {
+        return bloodRequestRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+    }
+
+    public record StatusUpdate(String status) {}
+
+    @PutMapping("/{id}/status")
+    public ApiMessage updateStatus(@PathVariable Long id, @RequestBody StatusUpdate update) {
+        if (update.status() == null || !List.of("Pending", "In Progress", "Fulfilled").contains(update.status())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request status");
+        BloodRequest request = get(id);
+        request.setStatus(update.status());
+        bloodRequestRepository.save(request);
+        return new ApiMessage("Request status updated");
     }
 
     @DeleteMapping("/{id}")

@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/donors/search").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/requests").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/inbox").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )

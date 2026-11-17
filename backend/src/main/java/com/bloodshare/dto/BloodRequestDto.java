@@ -15,6 +15,7 @@ public record BloodRequestDto(
         LocalDate requiredDate,
         @NotBlank @Email String email,
         @NotBlank String contactNumber,
-        @NotBlank String reason
+        @NotBlank String reason,
+        String urgency
 ) {
 }

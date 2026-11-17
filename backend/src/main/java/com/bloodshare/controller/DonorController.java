@@ -58,6 +58,15 @@ public class DonorController {
         return new ApiMessage("Donor activated");
     }
 
+    public record AvailabilityUpdate(boolean available) {}
+
+    @PutMapping("/{id}/availability")
+    public ApiMessage availability(@PathVariable Long id, @RequestBody AvailabilityUpdate update) {
+        Donor donor = donorRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Donor not found"));
+        donor.setAvailable(update.available()); donorRepository.save(donor);
+        return new ApiMessage("Donor availability updated");
+    }
+
     @DeleteMapping("/{id}")
     public ApiMessage delete(@PathVariable Long id) {
         if (!donorRepository.existsById(id)) {

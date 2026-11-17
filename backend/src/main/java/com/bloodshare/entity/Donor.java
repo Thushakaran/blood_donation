@@ -32,6 +32,7 @@ public class Donor {
     private LocalDate lastBloodDonatedDate;
     private boolean newDonor;
     private boolean active;
+    private boolean available = true;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -63,4 +64,6 @@ public class Donor {
     public void setNewDonor(boolean newDonor) { this.newDonor = newDonor; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+    public boolean isAvailable() { return available; }
+    public void setAvailable(boolean available) { this.available = available; }
 }
