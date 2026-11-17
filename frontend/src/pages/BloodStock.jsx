@@ -178,8 +178,8 @@ export default function BloodStock() {
           </div>
         ) : null}
 
-        <div className="mt-4 grid gap-4 md:grid-cols-5">
-          <div className="md:col-span-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="min-w-0 sm:col-span-2">
             <FormField label="Hospital">
               <select
                 className={inputClass}
@@ -192,51 +192,57 @@ export default function BloodStock() {
               </select>
             </FormField>
           </div>
-          <FormField label="Blood Group">
-            <select
-              className={inputClass}
-              value={form.bloodGroup}
-              onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
-            >
-              {BLOOD_GROUPS.map((group) => (
-                <option key={group}>{group}</option>
-              ))}
-            </select>
-          </FormField>
-          <FormField label="Action">
-            <select
-              className={inputClass}
-              value={form.action}
-              onChange={(e) => setForm({ ...form, action: e.target.value })}
-            >
-              <option value="increase">Increase (+)</option>
-              <option value="decrease">Decrease (-)</option>
-            </select>
-          </FormField>
-          <FormField label="Units">
-            <div className="flex gap-2">
-              <input
+          <div className="min-w-0">
+            <FormField label="Blood Group">
+              <select
                 className={inputClass}
-                type="number"
-                min="1"
-                value={form.units}
-                onChange={(e) => setForm({ ...form, units: e.target.value })}
-              />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                value={form.bloodGroup}
+                onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
               >
-                {submitting ? '...' : 'Apply'}
-              </button>
-            </div>
-          </FormField>
+                {BLOOD_GROUPS.map((group) => (
+                  <option key={group}>{group}</option>
+                ))}
+              </select>
+            </FormField>
+          </div>
+          <div className="min-w-0">
+            <FormField label="Action">
+              <select
+                className={inputClass}
+                value={form.action}
+                onChange={(e) => setForm({ ...form, action: e.target.value })}
+              >
+                <option value="increase">Increase (+)</option>
+                <option value="decrease">Decrease (-)</option>
+              </select>
+            </FormField>
+          </div>
+          <div className="min-w-0 sm:col-span-2 xl:col-span-1">
+            <FormField label="Units">
+              <div className="flex gap-2">
+                <input
+                  className={`${inputClass} min-w-0 flex-1`}
+                  type="number"
+                  min="1"
+                  value={form.units}
+                  onChange={(e) => setForm({ ...form, units: e.target.value })}
+                />
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                >
+                  {submitting ? '...' : 'Apply'}
+                </button>
+              </div>
+            </FormField>
+          </div>
         </div>
       </form>
 
       {/* Hospital Matrix Table */}
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-base font-semibold text-slate-900">Hospital Stock Matrix</h2>
           <p className="text-xs text-slate-500">
             Red cells: critical (&le;2 units) · Amber cells: low (&le;5 units)

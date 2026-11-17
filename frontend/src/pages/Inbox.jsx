@@ -96,7 +96,7 @@ export default function Inbox() {
           {
             key: 'message',
             label: 'Message',
-            render: (row) => <p className="max-w-md text-xs leading-relaxed text-slate-700">{row.message}</p>,
+            render: (row) => <p className="min-w-[220px] max-w-md text-xs leading-relaxed text-slate-700">{row.message}</p>,
           },
           {
             key: 'actions',

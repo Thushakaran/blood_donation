@@ -120,7 +120,7 @@ export default function DashboardLayout() {
   const unseenCount = notifications.filter((note) => note.active && !note.seen).length;
 
   if (!isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const pageTitle = location.pathname.startsWith('/dashboard/requests/')
@@ -240,33 +240,33 @@ export default function DashboardLayout() {
             onClick={() => setSidebarOpen(false)}
             aria-hidden="true"
           />
-          <aside className="relative z-10 w-64 border-r border-slate-200 bg-white">
+          <aside className="relative z-10 h-full w-64 max-w-[85vw] overflow-y-auto border-r border-slate-200 bg-white">
             {sidebarContent}
           </aside>
         </div>
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 border-b border-slate-200 bg-white/95 px-3 backdrop-blur-sm sm:gap-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 lg:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 lg:hidden"
               aria-label="Open navigation sidebar"
             >
               <MenuIcon className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2 text-sm">
-              <Link to="/dashboard" className="hidden text-slate-500 hover:text-slate-900 sm:inline">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <Link to="/dashboard" className="hidden shrink-0 text-slate-500 hover:text-slate-900 sm:inline">
                 Console
               </Link>
-              <ChevronRightIcon className="hidden h-4 w-4 text-slate-400 sm:inline" />
+              <ChevronRightIcon className="hidden h-4 w-4 shrink-0 text-slate-400 sm:inline" />
               <span className="truncate font-semibold text-slate-900">{pageTitle}</span>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="relative">
               <button
                 type="button"
@@ -275,7 +275,7 @@ export default function DashboardLayout() {
                   setNotifOpen(opening);
                   if (opening) refreshNotifications().catch(() => {});
                 }}
-                className="relative inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                className="relative inline-flex h-10 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:gap-2 sm:px-3"
                 aria-label="View clinical notifications"
                 aria-expanded={notifOpen}
               >
@@ -289,18 +289,18 @@ export default function DashboardLayout() {
               </button>
 
               {notifOpen ? (
-                <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:w-96">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <div>
+                <div className="fixed inset-x-3 top-[4.25rem] z-50 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900">Notification Log</p>
                       <p className="text-[11px] text-slate-500">{unseenCount} unseen</p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {unseenCount > 0 && <button type="button" onClick={markAllNotificationsSeen} className="text-xs font-medium text-red-600 hover:text-red-700">Mark all seen</button>}
+                    <div className="flex shrink-0 items-center gap-3">
+                      {unseenCount > 0 && <button type="button" onClick={markAllNotificationsSeen} className="whitespace-nowrap text-xs font-medium text-red-600 hover:text-red-700">Mark all seen</button>}
                       <button type="button" onClick={() => setNotifOpen(false)} className="text-xs text-slate-500 hover:text-slate-900">Close</button>
                     </div>
                   </div>
-                  <div className="mt-2 max-h-80 space-y-1.5 overflow-y-auto">
+                  <div className="mt-2 max-h-[65vh] space-y-1.5 overflow-y-auto sm:max-h-80">
                     {notifications.length === 0 ? (
                       <p className="py-6 text-center text-sm text-slate-500">All hospital inventories and queues are nominal.</p>
                     ) : (
@@ -309,7 +309,7 @@ export default function DashboardLayout() {
                           <AlertTriangleIcon className={`mt-0.5 h-4 w-4 shrink-0 ${note.severity === 'critical' ? 'text-red-600' : 'text-amber-600'}`} />
                           <div className="min-w-0 flex-1">
                             <Link to={note.to} onClick={() => { if (!note.seen) markNotificationSeen(note.id); setNotifOpen(false); }} className="block">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <p className="text-xs font-semibold text-slate-900">{note.title}</p>
                                 <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${note.seen ? 'bg-slate-200 text-slate-600' : 'bg-red-100 text-red-700'}`}>{note.seen ? 'Seen' : 'Unseen'}</span>
                                 {!note.active && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Resolved</span>}
@@ -329,7 +329,7 @@ export default function DashboardLayout() {
 
             <Link
               to="/"
-              className="whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex h-10 items-center whitespace-nowrap rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:px-3.5 sm:text-sm"
             >
               Public Portal
             </Link>

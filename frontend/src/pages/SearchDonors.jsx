@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { api } from '../api';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -112,7 +111,7 @@ export default function SearchDonors() {
             load(query);
           }}
         >
-          <div className="relative md:col-span-6">
+          <div className="relative min-w-0 md:col-span-5">
             <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               className={`${inputClass} pl-10`}
@@ -122,7 +121,7 @@ export default function SearchDonors() {
             />
           </div>
 
-          <div className="md:col-span-3">
+          <div className="min-w-0 md:col-span-3">
             <select
               className={inputClass}
               value={districtFilter}
@@ -138,18 +137,18 @@ export default function SearchDonors() {
             </select>
           </div>
 
-          <div className="flex gap-2 md:col-span-3">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap md:col-span-4">
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              className="min-h-[42px] flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
             >
               Search
             </button>
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+            <div className="inline-flex shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-1">
               <button
                 type="button"
                 onClick={() => setViewMode('cards')}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium ${
+                className={`rounded-md px-3 py-1.5 text-xs font-medium ${
                   viewMode === 'cards' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
                 }`}
               >
@@ -158,7 +157,7 @@ export default function SearchDonors() {
               <button
                 type="button"
                 onClick={() => setViewMode('table')}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium ${
+                className={`rounded-md px-3 py-1.5 text-xs font-medium ${
                   viewMode === 'table' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
                 }`}
               >
@@ -223,8 +222,8 @@ export default function SearchDonors() {
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-base font-semibold text-slate-900">{donor.name}</h2>
+                    <div className="min-w-0">
+                      <h2 className="truncate text-base font-semibold text-slate-900">{donor.name}</h2>
                       <p className="mt-0.5 text-xs text-slate-500">
                         {donor.gender === 'female' ? 'Female' : 'Male'} · {donor.bodyWeight} kg
                       </p>
@@ -252,7 +251,7 @@ export default function SearchDonors() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3.5">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3.5">
                   <StatusBadge
                     variant={donor.available === false ? 'warning' : 'success'}
                     label={donor.available === false ? 'Rest Interval' : 'Available'}

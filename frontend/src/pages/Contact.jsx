@@ -133,7 +133,7 @@ export default function Contact() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60 sm:w-auto"
           >
             {submitting ? 'Sending...' : 'Send Message'}
           </button>
@@ -168,9 +168,9 @@ export default function Contact() {
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
                   <MailIcon className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-medium text-slate-500">Email</p>
-                  <p className="text-sm font-medium text-slate-900">thushakarant@gmail.com</p>
+                  <p className="break-all text-sm font-medium text-slate-900">thushakarant@gmail.com</p>
                 </div>
               </div>
             </div>

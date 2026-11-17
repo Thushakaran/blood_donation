@@ -104,11 +104,11 @@ export default function NeedBlood() {
 
           <div>
             <span className="mb-2 block text-sm font-medium text-slate-700">Priority Level</span>
-            <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+            <div className="flex w-full rounded-lg border border-slate-200 bg-slate-50 p-1 sm:inline-flex sm:w-auto">
               <button
                 type="button"
                 onClick={() => update('urgency', 'normal')}
-                className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
+                className={`flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors sm:flex-initial sm:py-1.5 ${
                   form.urgency === 'normal'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -119,7 +119,7 @@ export default function NeedBlood() {
               <button
                 type="button"
                 onClick={() => update('urgency', 'urgent')}
-                className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
+                className={`flex-1 rounded-md px-4 py-2 text-xs font-semibold transition-colors sm:flex-initial sm:py-1.5 ${
                   form.urgency === 'urgent'
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
@@ -227,7 +227,7 @@ export default function NeedBlood() {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60 sm:w-auto"
           >
             {submitting ? 'Submitting Request...' : 'Submit Blood Request'}
           </button>

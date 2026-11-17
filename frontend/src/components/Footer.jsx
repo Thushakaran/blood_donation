@@ -7,8 +7,8 @@ export default function Footer() {
   return (
     <footer className="mt-auto border-t border-slate-200 bg-white text-slate-600">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-4">
-          <div className="md:col-span-2">
+        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+          <div className="sm:col-span-2">
             <Link to="/" className="inline-flex items-center gap-2.5 text-base font-bold text-slate-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-md bg-red-600 text-white">
                 <DropletFillIcon className="h-4 w-4" />
@@ -41,7 +41,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h3 className="text-sm font-semibold text-slate-900">Regional Helpline</h3>
             <ul className="mt-3 space-y-2.5 text-sm">
               <li className="flex items-start gap-2">
@@ -54,7 +54,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2">
                 <MailIcon className="h-4 w-4 shrink-0 text-red-600" />
-                <span>thushakarant@gmail.com</span>
+                <span className="break-all">thushakarant@gmail.com</span>
               </li>
             </ul>
           </div>

@@ -627,6 +627,18 @@ app.get('/api/public/overview', (_req, res) => {
   });
 });
 
+// Public hospitals list
+app.get('/api/public/hospitals', (_req, res) => {
+  return res.json(
+    HOSPITALS.map((hospitalName, idx) => ({
+      id: idx + 1,
+      hospitalName,
+      address: `${hospitalName}, Sri Lanka`,
+      contactNumber: '0762971306',
+    }))
+  );
+});
+
 // Auth endpoints
 app.post('/api/auth/login', (req, res) => {
   const missing = requireFields(req.body, ['username', 'password']);
@@ -636,12 +648,51 @@ app.post('/api/auth/login', (req, res) => {
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ message: 'Username or password do not match' });
   }
-  return res.json({ token: signToken(username), username });
+  return res.json({ token: signToken(username), username, role: 'SUPERADMIN', hospitalName: '' });
 });
 
 app.get('/api/auth/me', requireAdmin, (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '');
-  return res.json({ token, username: req.adminUser });
+  return res.json({ token, username: req.adminUser, role: 'SUPERADMIN', hospitalName: '' });
+});
+
+// Notifications endpoints
+app.get('/api/notifications', requireAdmin, (_req, res) => {
+  const lowStockGroups = computeStockByGroup().filter((g) => g.status !== 'Optimal');
+  const urgentRequests = bloodRequests.filter((r) => r.urgency === 'urgent' && r.status !== 'Fulfilled');
+  const list = [
+    ...urgentRequests.map((r) => ({
+      id: r.id,
+      title: `Urgent ${r.bloodGroupType} request (${r.units} units)`,
+      detail: `${r.hospitalAddress} · Required ${r.requiredDate || 'ASAP'}`,
+      severity: 'critical',
+      active: true,
+      seen: false,
+      link: `/dashboard/requests/${r.id}`,
+    })),
+    ...lowStockGroups.map((g, i) => ({
+      id: 100 + i,
+      title: `${g.bloodGroup} network stock is ${g.status.toLowerCase()}`,
+      detail: `${g.units} total units remaining across 10 hospitals`,
+      severity: g.status === 'Critical' ? 'critical' : 'warning',
+      active: true,
+      seen: false,
+      link: '/dashboard/stock',
+    })),
+  ];
+  return res.json(list);
+});
+
+app.get('/api/notifications/unseen-count', requireAdmin, (_req, res) => {
+  return res.json({ count: 0 });
+});
+
+app.put('/api/notifications/:id/seen', requireAdmin, (req, res) => {
+  return res.json({ id: Number(req.params.id), seen: true, seenAt: new Date().toISOString(), active: true });
+});
+
+app.put('/api/notifications/seen', requireAdmin, (_req, res) => {
+  return res.json({ message: 'All notifications marked seen' });
 });
 
 // Dashboard stats & analytics
@@ -989,6 +1040,11 @@ app.put('/api/profile', requireAdmin, (req, res) => {
 
 async function start() {
   const distDir = path.resolve(__dirname, 'frontend', 'dist');
+  const aistudioAssetsDir = path.resolve(__dirname, 'public', 'assets', 'aistudio');
+  if (fs.existsSync(aistudioAssetsDir)) {
+    app.use('/assets/aistudio', express.static(aistudioAssetsDir));
+  }
+
   const isProd = process.env.NODE_ENV === 'production';
 
   if (!isProd) {

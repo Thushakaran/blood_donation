@@ -73,7 +73,7 @@ export default function BloodRequests() {
         </div>
         <Link
           to="/need-blood"
-          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+          className="inline-flex w-full shrink-0 items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:w-auto sm:py-2"
         >
           New Blood Request
         </Link>
@@ -85,7 +85,7 @@ export default function BloodRequests() {
             key={item}
             type="button"
             onClick={() => setFilter(item)}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+            className={`rounded-lg px-3.5 py-2 text-xs font-semibold transition-colors sm:py-1.5 ${
               filter === item ? 'bg-red-600 text-white' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -177,10 +177,10 @@ export default function BloodRequests() {
             label: 'Actions',
             align: 'right',
             render: (row) => (
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                 <Link
                   to={`/dashboard/requests/${row.id}`}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:py-1"
                 >
                   <EyeIcon className="h-3.5 w-3.5" />
                   <span>Details</span>
@@ -188,7 +188,7 @@ export default function BloodRequests() {
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(row)}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 sm:py-1"
                 >
                   <TrashIcon className="h-3.5 w-3.5" />
                   <span>Close</span>

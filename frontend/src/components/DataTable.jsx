@@ -45,7 +45,7 @@ export default function DataTable({
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`whitespace-nowrap px-4 py-3 ${column.align === 'right' ? 'text-right' : 'text-left'}`}
+                  className={`whitespace-nowrap px-3 py-2.5 sm:px-4 sm:py-3 ${column.align === 'right' ? 'text-right' : 'text-left'}`}
                 >
                   {column.label}
                 </th>
@@ -58,7 +58,7 @@ export default function DataTable({
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-4 py-3 align-middle text-slate-700 ${
+                    className={`px-3 py-2.5 align-middle text-slate-700 sm:px-4 sm:py-3 ${
                       column.align === 'right' ? 'text-right tabular-nums' : ''
                     } ${column.mono ? 'font-mono text-xs tabular-nums' : ''}`}
                   >

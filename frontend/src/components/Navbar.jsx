@@ -17,7 +17,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:gap-8 lg:px-8">
         <Link
           to="/"
           className="flex shrink-0 items-center gap-2.5 whitespace-nowrap text-lg font-bold tracking-tight text-slate-900"
@@ -28,7 +28,7 @@ export default function Navbar() {
           <span className="font-display">Blood Share</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-4 md:flex lg:gap-6" aria-label="Primary navigation">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
@@ -47,16 +47,16 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <Link
             to={isAdmin ? '/dashboard' : '/login'}
-            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:inline-flex"
+            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:inline-flex lg:px-4"
           >
             {isAdmin ? 'Dashboard' : 'Sign In'}
           </Link>
           <Link
             to="/register"
-            className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:inline-flex"
+            className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:inline-flex lg:px-4"
           >
             Donate Blood
           </Link>
@@ -73,7 +73,7 @@ export default function Navbar() {
       </div>
 
       {open ? (
-        <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
+        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-200 bg-white px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
             {navLinks.map((link) => (
               <NavLink
@@ -82,7 +82,7 @@ export default function Navbar() {
                 end={link.to === '/'}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  `rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  `flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive ? 'bg-red-50 text-red-700' : 'text-slate-700 hover:bg-slate-50'
                   }`
                 }
@@ -93,14 +93,14 @@ export default function Navbar() {
             <Link
               to={isAdmin ? '/dashboard' : '/login'}
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               {isAdmin ? 'Dashboard' : 'Sign In'}
             </Link>
             <Link
               to="/register"
               onClick={() => setOpen(false)}
-              className="mt-2 flex items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              className="mt-2 flex min-h-[44px] items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
             >
               Donate Blood
             </Link>

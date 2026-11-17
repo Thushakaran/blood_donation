@@ -148,9 +148,9 @@ export default function Dashboard() {
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-7">
-          <div className="flex items-center justify-between gap-4">
-            <div>
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+            <div className="min-w-0">
               <h2 className="text-base font-semibold text-slate-900">
                 Network Blood Units by Group
               </h2>
@@ -158,7 +158,7 @@ export default function Dashboard() {
                 {isSuperAdmin ? 'Aggregate units across all hospitals' : `Available at ${hospitalName || 'your hospital'}`} ({analytics?.totalUnits ?? 0} total units)
               </p>
             </div>
-            <Link to="/dashboard/stock" className="text-xs font-semibold text-red-600 hover:text-red-700">
+            <Link to="/dashboard/stock" className="shrink-0 whitespace-nowrap text-xs font-semibold text-red-600 hover:text-red-700">
               Update stock →
             </Link>
           </div>
@@ -176,22 +176,22 @@ export default function Dashboard() {
                       ? 'bg-amber-500'
                       : 'bg-emerald-600';
                 return (
-                  <div key={group.bloodGroup} className="grid grid-cols-12 items-center gap-3">
-                    <span className="col-span-2 font-mono text-xs font-bold text-slate-900 sm:col-span-1">
+                  <div key={group.bloodGroup} className="flex items-center gap-3">
+                    <span className="w-9 shrink-0 font-mono text-xs font-bold text-slate-900">
                       {group.bloodGroup}
                     </span>
-                    <div className="col-span-7 h-3 overflow-hidden rounded-full bg-slate-100 sm:col-span-8">
+                    <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${barColor}`}
                         style={{ width: `${widthPct}%` }}
                       />
                     </div>
-                    <div className="col-span-3 flex items-center justify-end gap-2">
+                    <div className="flex w-14 shrink-0 items-center justify-end gap-2 sm:w-28">
                       <span className="font-mono text-xs font-semibold text-slate-900 tabular-nums">
                         {group.units}
                       </span>
                       <span
-                        className={`hidden text-[11px] font-medium sm:inline ${
+                        className={`hidden whitespace-nowrap text-[11px] font-medium sm:inline ${
                           group.status === 'Critical'
                             ? 'text-red-600'
                             : group.status === 'Low Stock'
@@ -209,7 +209,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-5">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-5">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">
@@ -235,20 +235,22 @@ export default function Dashboard() {
               Monthly totals will appear when dated donation and request history is available.
             </p>
           ) : (
-            <div className="mt-6 flex h-44 items-end justify-between gap-3 border-b border-slate-100 pb-2">
-              {monthly.map((item) => {
-                const donH = Math.round((item.donations / maxMonthly) * 140);
-                const reqH = Math.round((item.requests / maxMonthly) * 140);
-                return (
-                  <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
-                    <div className="flex items-end gap-1">
-                      <div className="w-3.5 rounded-t bg-red-600 transition-all" style={{ height: `${donH}px` }} title={`${item.donations} donations`} />
-                      <div className="w-3.5 rounded-t bg-slate-300 transition-all" style={{ height: `${reqH}px` }} title={`${item.requests} requests`} />
+            <div className="mt-6 overflow-x-auto">
+              <div className="flex h-44 min-w-[260px] items-end justify-between gap-3 border-b border-slate-100 pb-2">
+                {monthly.map((item) => {
+                  const donH = Math.round((item.donations / maxMonthly) * 140);
+                  const reqH = Math.round((item.requests / maxMonthly) * 140);
+                  return (
+                    <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
+                      <div className="flex items-end gap-1">
+                        <div className="w-3.5 rounded-t bg-red-600 transition-all" style={{ height: `${donH}px` }} title={`${item.donations} donations`} />
+                        <div className="w-3.5 rounded-t bg-slate-300 transition-all" style={{ height: `${reqH}px` }} title={`${item.requests} requests`} />
+                      </div>
+                      <span className="font-mono text-xs text-slate-500">{item.month}</span>
                     </div>
-                    <span className="font-mono text-xs text-slate-500">{item.month}</span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </section>
@@ -289,13 +291,13 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-7">
-          <div className="flex items-center justify-between">
-            <div>
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
               <h2 className="text-base font-semibold text-slate-900">Blood Request Summary</h2>
               <p className="mt-0.5 text-xs text-slate-500">Latest patient blood requests across hospitals</p>
             </div>
-            <Link to="/dashboard/requests" className="text-xs font-semibold text-red-600 hover:text-red-700">
+            <Link to="/dashboard/requests" className="shrink-0 whitespace-nowrap text-xs font-semibold text-red-600 hover:text-red-700">
               View all →
             </Link>
           </div>
@@ -304,17 +306,17 @@ export default function Dashboard() {
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500">
-                  <th className="py-2.5 pr-4">Patient</th>
-                  <th className="py-2.5 pr-4">Group</th>
-                  <th className="py-2.5 pr-4">Hospital</th>
-                  <th className="py-2.5 pr-4">Status</th>
-                  <th className="py-2.5 text-right">Units</th>
+                  <th className="whitespace-nowrap py-2.5 pr-4">Patient</th>
+                  <th className="whitespace-nowrap py-2.5 pr-4">Group</th>
+                  <th className="whitespace-nowrap py-2.5 pr-4">Hospital</th>
+                  <th className="whitespace-nowrap py-2.5 pr-4">Status</th>
+                  <th className="whitespace-nowrap py-2.5 text-right">Units</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {requests.slice(0, 5).map((req) => (
                   <tr key={req.id} className="hover:bg-slate-50/80">
-                    <td className="py-2.5 pr-4">
+                    <td className="whitespace-nowrap py-2.5 pr-4">
                       <Link
                         to={`/dashboard/requests/${req.id}`}
                         className="font-medium text-slate-900 hover:text-red-600"
@@ -322,11 +324,11 @@ export default function Dashboard() {
                         {req.patientName}
                       </Link>
                     </td>
-                    <td className="py-2.5 pr-4 font-mono text-xs font-bold text-red-700">
+                    <td className="whitespace-nowrap py-2.5 pr-4 font-mono text-xs font-bold text-red-700">
                       {req.bloodGroupType}
                     </td>
                     <td className="py-2.5 pr-4 text-xs text-slate-600">{req.hospitalAddress}</td>
-                    <td className="py-2.5 pr-4">
+                    <td className="whitespace-nowrap py-2.5 pr-4">
                       <StatusBadge
                         variant={
                           req.status === 'Fulfilled'
@@ -338,7 +340,7 @@ export default function Dashboard() {
                         label={req.urgency === 'urgent' && req.status !== 'Fulfilled' ? `Urgent · ${req.status}` : req.status}
                       />
                     </td>
-                    <td className="py-2.5 text-right font-mono text-xs font-semibold text-slate-900 tabular-nums">
+                    <td className="whitespace-nowrap py-2.5 text-right font-mono text-xs font-semibold text-slate-900 tabular-nums">
                       {req.units}
                     </td>
                   </tr>
@@ -351,7 +353,7 @@ export default function Dashboard() {
 
       {/* Recent Activities + Donation History */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-6">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-6">
           <h2 className="text-base font-semibold text-slate-900">Recent Activities</h2>
           <p className="mt-0.5 text-xs text-slate-500">Recent blood inventory adjustments {isSuperAdmin ? 'across hospitals' : `at ${hospitalName || 'your hospital'}`}</p>
           <ul className="mt-4 divide-y divide-slate-100">
@@ -359,7 +361,7 @@ export default function Dashboard() {
             {activities.slice(0, 5).map((act) => (
               <li key={act.id} className="py-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-slate-900">{act.title}</p>
                     <p className="mt-0.5 text-xs text-slate-500">{act.detail}</p>
                   </div>
@@ -373,13 +375,13 @@ export default function Dashboard() {
         </section>
 
         {isSuperAdmin && (
-          <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-6">
-          <div className="flex items-center justify-between">
-            <div>
+          <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="min-w-0">
               <h2 className="text-base font-semibold text-slate-900">Last Recorded Donation Dates</h2>
               <p className="mt-0.5 text-xs text-slate-500">Most recent donation dates saved on active donor profiles</p>
             </div>
-            <Link to="/dashboard/active-donors" className="text-xs font-semibold text-red-600 hover:text-red-700">
+            <Link to="/dashboard/active-donors" className="shrink-0 whitespace-nowrap text-xs font-semibold text-red-600 hover:text-red-700">
               All donors →
             </Link>
           </div>
@@ -387,19 +389,19 @@ export default function Dashboard() {
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500">
-                  <th className="py-2 pr-3">Donor</th>
-                  <th className="py-2 pr-3">Group</th>
-                  <th className="py-2 pr-3">District</th>
-                  <th className="py-2 text-right">Date</th>
+                  <th className="whitespace-nowrap py-2 pr-3">Donor</th>
+                  <th className="whitespace-nowrap py-2 pr-3">Group</th>
+                  <th className="whitespace-nowrap py-2 pr-3">District</th>
+                  <th className="whitespace-nowrap py-2 text-right">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {donationHistory.slice(0, 5).map((d) => (
                   <tr key={d.id}>
-                    <td className="py-2.5 pr-3 font-medium text-slate-900">{d.donorName}</td>
-                    <td className="py-2.5 pr-3 font-mono text-xs font-bold text-red-700">{d.bloodGroup}</td>
-                    <td className="py-2.5 pr-3 text-xs text-slate-600">{d.district}</td>
-                    <td className="py-2.5 text-right font-mono text-xs text-slate-600 tabular-nums">{d.date}</td>
+                    <td className="whitespace-nowrap py-2.5 pr-3 font-medium text-slate-900">{d.donorName}</td>
+                    <td className="whitespace-nowrap py-2.5 pr-3 font-mono text-xs font-bold text-red-700">{d.bloodGroup}</td>
+                    <td className="whitespace-nowrap py-2.5 pr-3 text-xs text-slate-600">{d.district}</td>
+                    <td className="whitespace-nowrap py-2.5 text-right font-mono text-xs text-slate-600 tabular-nums">{d.date}</td>
                   </tr>
                 ))}
                 {donationHistory.length === 0 && <tr><td colSpan="4" className="py-8 text-center text-sm text-slate-500">No donor donation dates have been recorded.</td></tr>}

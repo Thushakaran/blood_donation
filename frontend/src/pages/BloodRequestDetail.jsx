@@ -104,7 +104,7 @@ export default function BloodRequestDetail() {
               key={step}
               type="button"
               onClick={() => updateStatus(step)}
-              className={`rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors ${
+              className={`flex-1 whitespace-nowrap rounded-lg border px-3.5 py-2 text-xs font-semibold transition-colors sm:flex-initial ${
                 (request.status || 'Pending') === step
                   ? step === 'Fulfilled'
                     ? 'border-emerald-600 bg-emerald-600 text-white'
@@ -125,8 +125,8 @@ export default function BloodRequestDetail() {
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-12">
-        <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 lg:col-span-7">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="min-w-0 space-y-6 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-7">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <p className="text-xs font-medium text-slate-500">Required Blood Component</p>
               <p className="mt-1 font-mono text-3xl font-bold text-red-600">{request.bloodGroupType}</p>
@@ -140,43 +140,43 @@ export default function BloodRequestDetail() {
           </div>
 
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Admitting Hospital</dt>
-              <dd className="mt-1 flex items-center gap-2 font-medium text-slate-900">
-                <BuildingIcon className="h-4 w-4 text-slate-400" />
+              <dd className="mt-1 flex items-start gap-2 font-medium text-slate-900">
+                <BuildingIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <span>{request.hospitalAddress}</span>
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Attending Physician</dt>
               <dd className="mt-1 font-medium text-slate-900">{request.doctorName}</dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Required Date</dt>
               <dd className="mt-1 flex items-center gap-2 font-mono text-slate-900 tabular-nums">
-                <CalendarIcon className="h-4 w-4 text-slate-400" />
+                <CalendarIcon className="h-4 w-4 shrink-0 text-slate-400" />
                 <span>{request.requiredDate || 'ASAP'}</span>
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Patient Gender</dt>
               <dd className="mt-1 capitalize text-slate-900">{request.gender}</dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Contact Phone</dt>
               <dd className="mt-1 flex items-center gap-2 font-mono text-slate-900 tabular-nums">
-                <PhoneIcon className="h-4 w-4 text-slate-400" />
+                <PhoneIcon className="h-4 w-4 shrink-0 text-slate-400" />
                 <span>{request.contactNumber}</span>
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs font-medium text-slate-500">Ward / Contact Email</dt>
               <dd className="mt-1 flex items-center gap-2 text-slate-900">
-                <MailIcon className="h-4 w-4 text-slate-400" />
-                <span>{request.email}</span>
+                <MailIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                <span className="break-all">{request.email}</span>
               </dd>
             </div>
-            <div className="sm:col-span-2">
+            <div className="min-w-0 sm:col-span-2">
               <dt className="text-xs font-medium text-slate-500">Clinical Reason / Notes</dt>
               <dd className="mt-1 rounded-lg border border-slate-100 bg-slate-50 p-3 text-slate-700">
                 {request.reason}
@@ -185,7 +185,7 @@ export default function BloodRequestDetail() {
           </dl>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-5">
+        <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-5">
           <h2 className="text-base font-semibold text-slate-900">
             Matching Active Donors ({request.bloodGroupType})
           </h2>

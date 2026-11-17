@@ -74,13 +74,13 @@ export default function About() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               to="/register"
-              className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              className="w-full rounded-lg bg-red-600 px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:w-auto"
             >
               Become a Donor
             </Link>
             <Link
               to="/contact"
-              className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="w-full rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-center text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:w-auto"
             >
               Contact Blood Bank
             </Link>
@@ -97,7 +97,7 @@ export default function About() {
             </p>
           </div>
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {HOSPITALS.map((hospital) => (
             <div
               key={hospital}

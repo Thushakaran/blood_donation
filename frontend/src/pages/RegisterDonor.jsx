@@ -76,10 +76,10 @@ export default function RegisterDonor({ adminMode = false }) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className={adminMode ? 'space-y-2' : 'mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'}>
       <div className="max-w-2xl">
         <p className="text-sm font-semibold text-red-600">Volunteer Donor Registry</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {adminMode ? 'Add Donor to Registry' : 'Donor Registration'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -282,7 +282,7 @@ export default function RegisterDonor({ adminMode = false }) {
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-red-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60 sm:w-auto"
           >
             {submitting ? 'Submitting Registration...' : 'Submit Donor Registration'}
           </button>

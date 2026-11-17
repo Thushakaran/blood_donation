@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { BLOOD_COMPATIBILITY } from '../constants';
@@ -13,6 +13,9 @@ import {
   HeartPulseIcon,
   ShieldCheckIcon,
 } from '../components/Icons';
+
+const GUIDE_VIDEO_SRC =
+  '/assets/aistudio/AQPxr0iXmTUL5R_uwzYNuw2rYcK70DRl0nS3o2cBu0QBmjyDVNweglBSNhLBDzhIGBxWxzAfyEMPtFod9Ie7cyhOfedsTgrhSDOvCXutHwPcpA_f7eae55d.mp4';
 
 const HOW_IT_WORKS = [
   {
@@ -85,6 +88,26 @@ export default function Home() {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [heroImgFailed, setHeroImgFailed] = useState(false);
+  const [bgPlaying, setBgPlaying] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return true;
+  });
+  const [bgVideoFailed, setBgVideoFailed] = useState(false);
+  const heroVideoRef = useRef(null);
+  const guideVideoRef = useRef(null);
+
+  useEffect(() => {
+    [heroVideoRef.current, guideVideoRef.current].forEach((video) => {
+      if (!video) return;
+      if (bgPlaying) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, [bgPlaying]);
 
   useEffect(() => {
     let active = true;
@@ -129,9 +152,30 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      {/* Hero Section with subtle looping background video */}
+      <section className="relative overflow-hidden border-b border-slate-200 bg-white">
+        {!bgVideoFailed ? (
+          <>
+            <video
+              ref={heroVideoRef}
+              src={GUIDE_VIDEO_SRC}
+              autoPlay={bgPlaying}
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+              onError={() => setBgVideoFailed(true)}
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/75"
+            />
+          </>
+        ) : null}
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
           <div className="grid items-stretch gap-10 lg:grid-cols-12">
             <div className="flex flex-col justify-center lg:col-span-6">
               <p className="text-sm font-semibold text-red-600">
@@ -139,7 +183,7 @@ export default function Home() {
               </p>
               <h1
                 className="mt-3 max-w-xl font-bold tracking-tight text-slate-900"
-                style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)', lineHeight: 1.1, textWrap: 'balance' }}
+                style={{ fontSize: 'clamp(1.875rem, 4vw, 3.5rem)', lineHeight: 1.1, textWrap: 'balance' }}
               >
                 Give blood today. Keep every hospital ready.
               </h1>
@@ -147,17 +191,17 @@ export default function Home() {
                 Connect directly with verified donors, submit urgent hospital blood requests, and support safe transfusion reserves across 10 major Sri Lankan medical centers.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                  className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:w-auto"
                 >
                   <span>Donate Blood</span>
                   <ArrowRightIcon className="h-4 w-4" />
                 </Link>
                 <Link
                   to="/need-blood"
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                  className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700 sm:w-auto"
                 >
                   <span>Request Blood</span>
                 </Link>
@@ -169,12 +213,23 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-6 text-xs text-slate-500">
-                <span>10 Regional Hospitals</span>
-                <span aria-hidden="true">·</span>
-                <span>24/7 Emergency Coordination</span>
-                <span aria-hidden="true">·</span>
-                <span>Screened Donor Registry</span>
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-6 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span>10 Regional Hospitals</span>
+                  <span aria-hidden="true">·</span>
+                  <span>24/7 Emergency Coordination</span>
+                  <span aria-hidden="true">·</span>
+                  <span>Screened Donor Registry</span>
+                </div>
+                {!bgVideoFailed ? (
+                  <button
+                    type="button"
+                    onClick={() => setBgPlaying((prev) => !prev)}
+                    className="rounded-md border border-slate-200 bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                  >
+                    {bgPlaying ? 'Pause background motion' : 'Play background motion'}
+                  </button>
+                ) : null}
               </div>
             </div>
 
@@ -289,12 +344,12 @@ export default function Home() {
                   className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300"
                 >
                   <div>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap sm:gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
                         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 font-mono text-base font-bold text-red-700">
                           {req.bloodGroupType}
                         </span>
-                        <div>
+                        <div className="min-w-0">
                           <h3 className="text-base font-semibold text-slate-900">
                             {req.hospitalAddress}
                           </h3>
@@ -311,9 +366,9 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-500">
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1.5 tabular-nums">
-                      <CalendarIcon className="h-3.5 w-3.5 text-slate-400" />
+                      <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                       Required by {req.requiredDate || 'ASAP'}
                     </span>
                     <Link
@@ -386,35 +441,68 @@ export default function Home() {
       {/* Blood Compatibility Guide */}
       <section className="border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-red-600">Compatibility Reference</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-              Blood group donation matrix
-            </h2>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold text-red-600">Compatibility Reference</p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+                Blood group donation matrix
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Visual donor-to-recipient matching guide alongside compatible blood type rules.
+              </p>
+            </div>
+            {!bgVideoFailed ? (
+              <button
+                type="button"
+                onClick={() => setBgPlaying((prev) => !prev)}
+                className="self-start rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                {bgPlaying ? 'Pause Guide Video' : 'Play Guide Video'}
+              </button>
+            ) : null}
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {BLOOD_COMPATIBILITY.map((group) => (
-              <div
-                key={group.type}
-                className="rounded-xl border border-slate-200 bg-slate-50/50 p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-2xl font-bold text-red-600">{group.type}</span>
-                  <BuildingIcon className="h-4 w-4 text-slate-400" />
-                </div>
-                <dl className="mt-3 space-y-1.5 text-xs">
-                  <div>
-                    <dt className="font-medium text-slate-500">Can give to</dt>
-                    <dd className="mt-0.5 font-medium text-slate-900">{group.give}</dd>
-                  </div>
-                  <div className="pt-1">
-                    <dt className="font-medium text-slate-500">Can receive from</dt>
-                    <dd className="mt-0.5 font-medium text-slate-900">{group.receive}</dd>
-                  </div>
-                </dl>
+          <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-12">
+            {!bgVideoFailed ? (
+              <div className="flex items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-[#faf2ee] lg:col-span-4">
+                <video
+                  ref={guideVideoRef}
+                  src={GUIDE_VIDEO_SRC}
+                  autoPlay={bgPlaying}
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label="Animated blood donation compatibility guide showing donor and recipient blood types"
+                  onError={() => setBgVideoFailed(true)}
+                  className="h-full max-h-[460px] w-full object-contain lg:max-h-[520px]"
+                />
               </div>
-            ))}
+            ) : null}
+
+            <div className={`grid gap-4 sm:grid-cols-2 ${!bgVideoFailed ? 'lg:col-span-8' : 'lg:col-span-12 lg:grid-cols-4'}`}>
+              {BLOOD_COMPATIBILITY.map((group) => (
+                <div
+                  key={group.type}
+                  className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-5"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-2xl font-bold text-red-600">{group.type}</span>
+                    <BuildingIcon className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <dl className="mt-3 space-y-1.5 text-xs">
+                    <div>
+                      <dt className="font-medium text-slate-500">Can give to</dt>
+                      <dd className="mt-0.5 font-medium text-slate-900">{group.give}</dd>
+                    </div>
+                    <div className="pt-1">
+                      <dt className="font-medium text-slate-500">Can receive from</dt>
+                      <dd className="mt-0.5 font-medium text-slate-900">{group.receive}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
