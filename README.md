@@ -19,26 +19,23 @@ cd backend
 mvnw.cmd spring-boot:run
 ```
 
-The API starts at `http://localhost:8081` (or the value of `PORT`) and uses an H2 file database under `backend/data/`.
-
-To connect to MySQL, set these environment variables:
-
-```text
-SPRING_DATASOURCE_URL=jdbc:mysql://<host>:3306/blood_donation
-SPRING_DATASOURCE_USERNAME=<database-user>
-SPRING_DATASOURCE_PASSWORD=<database-password>
-```
+The API starts at `http://localhost:8081`. Make sure the datasource configured in `backend/src/main/resources/application.properties` is available before starting the backend.
 
 The local default admin login is `admin` / `admin123`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to override it.
 
 ### Frontend
 
+In a second terminal:
+
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-These commands run from the project root (including in Google AI Studio). Open `http://localhost:5174`. To run the frontend standalone, use the same commands from `frontend/`.
+Open `http://localhost:5174`. The Vite dev server forwards `/api` requests to the backend at `http://localhost:8081`.
+
+For the separate Express demo server, run `npm install` and `npm run dev` from the project root, then open `http://localhost:3000`. That server uses in-memory demo data.
 
 ### Deploy to Render
 
