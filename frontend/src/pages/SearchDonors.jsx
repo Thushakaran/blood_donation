@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -56,9 +57,10 @@ const tableColumns = [
 ];
 
 export default function SearchDonors() {
-  const [query, setQuery] = useState('');
-  const [bloodGroupFilter, setBloodGroupFilter] = useState('All');
-  const [districtFilter, setDistrictFilter] = useState('All');
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get('q') || '');
+  const [bloodGroupFilter, setBloodGroupFilter] = useState(() => searchParams.get('bloodGroup') || 'All');
+  const [districtFilter, setDistrictFilter] = useState(() => searchParams.get('district') || 'All');
   const [viewMode, setViewMode] = useState('cards');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -122,8 +124,10 @@ export default function SearchDonors() {
           </div>
 
           <div className="min-w-0 md:col-span-3">
+            <label htmlFor="donor-district-filter" className="sr-only">District</label>
             <select
               className={inputClass}
+              id="donor-district-filter"
               value={districtFilter}
               onChange={(e) => setDistrictFilter(e.target.value)}
               aria-label="Filter by district"

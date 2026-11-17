@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { BLOOD_COMPATIBILITY } from "../constants";
+import { BLOOD_COMPATIBILITY, BLOOD_GROUPS, DISTRICTS } from "../constants";
 import heroClinicImg from "../assets/images/hero_blood_clinic_1794828546655.jpg";
 import eligibilityVideo from "../assets/eligibility.mp4";
 import StatusBadge from "../components/StatusBadge";
@@ -16,6 +16,8 @@ import {
 } from "../components/Icons";
 
 const GUIDE_VIDEO_SRC = eligibilityVideo;
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
 
 const HOW_IT_WORKS = [
   {
@@ -56,6 +58,45 @@ const WHY_DONATE = [
   },
 ];
 
+const BLOOD_FACTS = [
+  {
+    label: "One donation",
+    title: "Can help up to three people",
+    description:
+      "Donated blood can be separated into red cells, platelets, and plasma so different patients can receive the components they need.",
+  },
+  {
+    label: "No substitute",
+    title: "Blood depends on donors",
+    description:
+      "Blood for transfusion cannot be manufactured. Hospitals depend on people choosing to donate.",
+  },
+  {
+    label: "Short shelf life",
+    title: "Supplies need regular renewal",
+    description:
+      "Red cells may be stored for up to 42 days, while platelets are typically stored for up to five days.",
+  },
+  {
+    label: "Compatibility",
+    title: "Blood groups are not interchangeable",
+    description:
+      "O negative red cells are often used when an emergency transfusion needs to start before a patient's type is known. Clinical teams still confirm compatibility.",
+  },
+  {
+    label: "Since 1901",
+    title: "Blood groups have a history",
+    description:
+      "Karl Landsteiner identified the ABO blood groups in 1901. World Blood Donor Day is observed on June 14, his birthday.",
+  },
+  {
+    label: "Who needs blood",
+    title: "Donations support many kinds of care",
+    description:
+      "Transfusions may be needed after accidents or surgery, during childbirth or cancer treatment, and for blood disorders such as thalassemia.",
+  },
+];
+
 const ELIGIBILITY_RULES = [
   "Aged between 18 and 60 years old with valid national identification",
   "Minimum body weight of 50 kg and in good general health on donation day",
@@ -66,26 +107,29 @@ const ELIGIBILITY_RULES = [
 const TESTIMONIALS = [
   {
     quote:
-      "When our surgical ward faced a critical O- shortage before midnight, Blood Share matched two verified donors within 25 minutes.",
-    name: "Dr. K. Senanayake",
-    role: "Consultant Trauma Surgeon, National Hospital of Sri Lanka",
+      "When a surgical ward faces a critical O- shortage, fast coordination with eligible donors can help the care team respond.",
+    name: "Hospital coordination example",
+    role: "Illustrative scenario",
   },
   {
     quote:
-      "Having clear donor intervals and hospital contact details makes regular donation effortless. I have donated four times through the Jaffna center.",
-    name: "Nirosha Sivalingam",
-    role: "Registered A+ Donor, Jaffna",
+      "Clear donation guidance and hospital contact details can make it easier for volunteers to plan a return donation.",
+    name: "Volunteer donor example",
+    role: "Illustrative scenario",
   },
   {
     quote:
-      "Centralizing blood stock levels across all 10 partner hospitals reduced emergency inter-hospital transfer delays significantly.",
-    name: "Dr. P. Mahendran",
-    role: "Hematology Unit Lead, Jaffna Teaching Hospital",
+      "Sharing current stock levels can help hospitals coordinate transfers when a local supply is low.",
+    name: "Hospital network example",
+    role: "Illustrative scenario",
   },
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
+  const [searchBloodGroup, setSearchBloodGroup] = useState("All");
+  const [searchDistrict, setSearchDistrict] = useState("All");
   const [loading, setLoading] = useState(true);
   const [heroImgFailed, setHeroImgFailed] = useState(false);
   const [bgPlaying, setBgPlaying] = useState(() => {
@@ -126,31 +170,44 @@ export default function Home() {
   }, []);
 
   const stats = [
-    {
-      label: "Total Registered Donors",
-      value: overview ? overview.totalDonors : "—",
-      context: overview
-        ? `${overview.activeDonors} verified active`
-        : "Across 8 provinces",
-    },
-    {
-      label: "Available Blood Units",
-      value: overview ? overview.availableUnits : "—",
-      context: "Across 10 partner hospitals",
-    },
-    {
-      label: "Successful Donations",
-      value: overview ? overview.successfulDonations : "—",
-      context: "Screened whole-blood units",
-    },
-    {
-      label: "Blood Requests Fulfilled",
-      value: overview ? overview.requestsFulfilled : "—",
-      context: "Emergency & scheduled care",
-    },
+    { label: "Blood groups supported", value: "8", context: "Across the ABO and Rh groups" },
+    { label: "Potential components", value: "3", context: "Red cells, platelets, and plasma" },
+    { label: "Red cell storage", value: "Up to 42 days", context: "Duration depends on preparation" },
+    { label: "Platelet storage", value: "About 5 days", context: "Short shelf life calls for steady donations" },
   ];
 
-  const recentRequests = overview?.recentRequests || [];
+  const recentRequests = (overview?.recentRequests || [])
+    .filter((request) => {
+      if (request.status === "Fulfilled") return false;
+      if (!request.requiredDate) return true;
+      const [year, month, day] = request.requiredDate.split("-").map(Number);
+      return new Date(year, month - 1, day) >= TODAY;
+    })
+    .sort((a, b) => {
+      const rank = (urgency) => /critical/i.test(urgency || "") ? 0 : /urgent/i.test(urgency || "") ? 1 : 2;
+      const urgencyOrder = rank(a.urgency) - rank(b.urgency);
+      if (urgencyOrder) return urgencyOrder;
+      return (a.requiredDate || "9999-12-31").localeCompare(b.requiredDate || "9999-12-31");
+    });
+
+  function requestTiming(request) {
+    if (!request.requiredDate) return "Needed as soon as possible";
+    const [year, month, day] = request.requiredDate.split("-").map(Number);
+    const dueDate = new Date(year, month - 1, day);
+    const daysUntil = Math.round((dueDate - TODAY) / 86400000);
+    if (daysUntil === 0) return "Due today";
+    if (daysUntil === 1) return "Due tomorrow";
+    if (daysUntil <= 2) return `Due in ${daysUntil} days`;
+    return `Required ${dueDate.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
+  }
+
+  function submitDonorSearch(event) {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (searchBloodGroup !== "All") params.set("bloodGroup", searchBloodGroup);
+    if (searchDistrict !== "All") params.set("district", searchDistrict);
+    navigate(`/search${params.size ? `?${params.toString()}` : ""}`);
+  }
 
   return (
     <div>
@@ -213,13 +270,37 @@ export default function Home() {
                 >
                   <span>Request Blood</span>
                 </Link>
-                <Link
-                  to="/search"
-                  className="whitespace-nowrap px-2 py-2 text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline"
-                >
-                  Search active donors
-                </Link>
               </div>
+
+              <form
+                onSubmit={submitDonorSearch}
+                className="mt-5 grid gap-2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-sm sm:grid-cols-[1fr_1fr_auto]"
+                aria-label="Search for blood donors"
+              >
+                <label className="sr-only" htmlFor="home-blood-group">Blood group</label>
+                <select
+                  id="home-blood-group"
+                  value={searchBloodGroup}
+                  onChange={(event) => setSearchBloodGroup(event.target.value)}
+                  className="min-h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
+                >
+                  <option value="All">Any blood group</option>
+                  {BLOOD_GROUPS.map((group) => <option key={group}>{group}</option>)}
+                </select>
+                <label className="sr-only" htmlFor="home-district">District</label>
+                <select
+                  id="home-district"
+                  value={searchDistrict}
+                  onChange={(event) => setSearchDistrict(event.target.value)}
+                  className="min-h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
+                >
+                  <option value="All">Any district</option>
+                  {DISTRICTS.map((district) => <option key={district}>{district}</option>)}
+                </select>
+                <button type="submit" className="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-700">
+                  Search donors
+                </button>
+              </form>
 
               <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-6 text-xs text-slate-500">
                 <div className="flex flex-wrap items-center gap-3">
@@ -279,12 +360,56 @@ export default function Home() {
                   {stat.label}
                 </p>
                 <p className="mt-2 font-mono text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
-                  {loading ? "..." : stat.value}
+                  {stat.value}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">{stat.context}</p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Current network stock by blood group */}
+      <section className="border-b border-slate-200 bg-white" aria-labelledby="stock-strip-heading">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-sm font-semibold text-red-600">Live Network Availability</p>
+              <h2 id="stock-strip-heading" className="mt-1 text-xl font-bold tracking-tight text-slate-900">Blood stock by group</h2>
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-700" aria-label="Stock status legend">
+              <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />Available</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" />Low</span>
+              <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-600" />Critical</span>
+            </div>
+          </div>
+          {overview?.stockByGroup?.length ? (
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+              {BLOOD_GROUPS.map((group) => {
+                const stock = overview.stockByGroup.find((item) => item.bloodGroup === group);
+                const units = Number(stock?.units || 0);
+                const critical = units < 25;
+                const low = units >= 25 && units < 50;
+                const dotClass = critical ? "bg-red-600" : low ? "bg-amber-500" : "bg-emerald-500";
+                const valueClass = critical ? "text-red-700" : low ? "text-amber-700" : "text-emerald-700";
+                return (
+                  <div key={group} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-base font-bold text-slate-900">{group}</span>
+                      <span className={`h-2.5 w-2.5 rounded-full ${dotClass}`} aria-hidden="true" />
+                    </div>
+                    <p className={`mt-1 font-mono text-xl font-semibold tabular-nums ${valueClass}`}>{units}</p>
+                    <p className="text-sm text-slate-700">units · {critical ? "Critical" : low ? "Low" : "Available"}</p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-700" role="status">
+              {loading ? "Loading current hospital stock…" : "Current stock totals are temporarily unavailable."}
+            </p>
+          )}
+          <p className="mt-3 text-sm text-slate-700">Network totals from participating hospital inventory; confirm availability with the hospital before travelling.</p>
         </div>
       </section>
 
@@ -357,8 +482,8 @@ export default function Home() {
                 No open blood requests right now
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                All current hospital transfusion requests have been fulfilled.
-                You can still register as a donor for future needs.
+                No upcoming open requests are currently listed. You can still
+                register as a donor so hospitals can reach you when needed.
               </p>
               <Link
                 to="/register"
@@ -389,20 +514,24 @@ export default function Home() {
                           </p>
                         </div>
                       </div>
-                      <StatusBadge
-                        variant={
-                          req.urgency === "urgent" ? "danger" : "warning"
-                        }
-                        label={req.urgency === "urgent" ? "Urgent" : req.status}
-                        showIcon={req.urgency === "urgent"}
-                      />
+                      <div className="flex shrink-0 flex-wrap gap-2">
+                        {/critical/i.test(req.urgency || "") ? (
+                          <StatusBadge variant="danger" label="Critical" showIcon />
+                        ) : /urgent/i.test(req.urgency || "") ? (
+                          <StatusBadge variant="danger" label="Urgent" showIcon />
+                        ) : null}
+                        <StatusBadge
+                          variant={req.requiredDate && requestTiming(req).startsWith("Due") ? "warning" : "neutral"}
+                          label={requestTiming(req)}
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1.5 tabular-nums">
                       <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      Required by {req.requiredDate || "ASAP"}
+                      {req.status || "Pending"} request
                     </span>
                     <Link
                       to="/register"
@@ -479,6 +608,64 @@ export default function Home() {
                 </Link>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Six concise blood donation facts */}
+      <section className="border-y border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold text-red-600">Did You Know?</p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+              Six facts about blood donation
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-slate-700">
+              A quick look at why regular donations make a difference.
+            </p>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {BLOOD_FACTS.map((fact) => (
+              <article key={fact.title} className="rounded-xl border border-slate-200 bg-white p-5">
+                <p className="text-sm font-semibold text-red-700">{fact.label}</p>
+                <h3 className="mt-2 text-lg font-semibold text-slate-900">{fact.title}</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-700">{fact.description}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-5 text-center text-sm text-slate-600">
+            Sources: {" "}
+            <a className="font-medium text-slate-700 underline underline-offset-2 hover:text-red-700" href="https://www.who.int/news-room/questions-and-answers/item/blood-products-why-should-i-donate-blood" target="_blank" rel="noreferrer">World Health Organization</a>
+            {" · "}
+            <a className="font-medium text-slate-700 underline underline-offset-2 hover:text-red-700" href="https://www.redcrossblood.org/donate-blood/blood-donation-process/what-happens-to-donated-blood.html" target="_blank" rel="noreferrer">American Red Cross</a>
+          </p>
+        </div>
+      </section>
+
+      {/* Common donor questions */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+          <p className="text-sm font-semibold text-red-600">Quick Answers</p>
+          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            Questions about donating
+          </h2>
+          <div className="mt-6 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white px-5">
+            <details className="py-4">
+              <summary className="cursor-pointer text-base font-semibold text-slate-900">How do I know if I can donate?</summary>
+              <p className="mt-2 text-base leading-relaxed text-slate-700">Eligibility depends on your health and local donation rules. Review the registration guidance, then let the hospital team screen you before donating.</p>
+            </details>
+            <details className="border-t border-slate-200 py-4">
+              <summary className="cursor-pointer text-base font-semibold text-slate-900">How often can I donate?</summary>
+              <p className="mt-2 text-base leading-relaxed text-slate-700">Intervals depend on the type of donation and local guidance. Your donation center can tell you when you are eligible to return.</p>
+            </details>
+            <details className="border-t border-slate-200 py-4">
+              <summary className="cursor-pointer text-base font-semibold text-slate-900">Can I choose who receives my donation?</summary>
+              <p className="mt-2 text-base leading-relaxed text-slate-700">The hospital blood service tests and allocates donations according to patient needs and compatibility.</p>
+            </details>
+            <details className="border-t border-slate-200 py-4">
+              <summary className="cursor-pointer text-base font-semibold text-slate-900">Where can I ask a question?</summary>
+              <p className="mt-2 text-base leading-relaxed text-slate-700">Use the <Link to="/contact" className="font-semibold text-red-700 underline underline-offset-2">Contact page</Link> to reach the coordination team.</p>
+            </details>
           </div>
         </div>
       </section>
@@ -576,30 +763,31 @@ export default function Home() {
       <section className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-red-600">
-              Community & Hospital Voices
-            </p>
+            <p className="text-sm font-semibold text-red-600">Sample Stories</p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-              Trusted by clinicians and volunteer donors
+              Examples of donor and hospital impact
             </h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-700">
+              These are illustrative scenarios, not verified testimonials or endorsements from real people or hospitals.
+            </p>
           </div>
 
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {TESTIMONIALS.map((item) => (
-              <blockquote
+              <article
                 key={item.name}
                 className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6"
               >
-                <p className="text-sm leading-relaxed text-slate-700">
+                <p className="text-base leading-relaxed text-slate-700">
                   “{item.quote}”
                 </p>
                 <footer className="mt-5 border-t border-slate-100 pt-4">
                   <p className="text-sm font-semibold text-slate-900">
-                    {item.name}
+                    {item.name} · illustrative sample
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500">{item.role}</p>
                 </footer>
-              </blockquote>
+              </article>
             ))}
           </div>
         </div>
