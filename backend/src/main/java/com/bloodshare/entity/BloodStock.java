@@ -18,6 +18,9 @@ public class BloodStock {
     @Column(unique = true, nullable = false)
     private String hospitalName;
 
+    private String address;
+    private String contactNumber;
+
     private int aPositive;
     private int aNegative;
     private int bPositive;
@@ -31,6 +34,10 @@ public class BloodStock {
     public void setId(Long id) { this.id = id; }
     public String getHospitalName() { return hospitalName; }
     public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public String getContactNumber() { return contactNumber; }
+    public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
     @JsonProperty("aPositive")
     public int getAPositive() { return aPositive; }
     public void setAPositive(int aPositive) { this.aPositive = aPositive; }

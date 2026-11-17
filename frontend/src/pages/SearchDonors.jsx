@@ -102,12 +102,6 @@ export default function SearchDonors() {
             Filter verified donors by blood group, district, or name to coordinate urgent donations.
           </p>
         </div>
-        <Link
-          to="/register"
-          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
-        >
-          Register as Donor
-        </Link>
       </div>
 
       <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">

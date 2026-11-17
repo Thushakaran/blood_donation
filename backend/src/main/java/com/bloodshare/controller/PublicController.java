@@ -28,4 +28,9 @@ public class PublicController {
         long fulfilled = requests.findAll().stream().filter(r -> "Fulfilled".equals(r.getStatus())).count();
         return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "stockByGroup", stockByGroup, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
     }
+
+    @GetMapping("/hospitals")
+    public List<String> hospitals() {
+        return stock.findAll().stream().map(row -> row.getHospitalName()).sorted().toList();
+    }
 }

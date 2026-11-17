@@ -4,6 +4,7 @@ import com.bloodshare.dto.ApiMessage;
 import com.bloodshare.dto.BloodRequestDto;
 import com.bloodshare.entity.BloodRequest;
 import com.bloodshare.repository.BloodRequestRepository;
+import com.bloodshare.security.CurrentAdmin;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,11 @@ import java.util.List;
 @RequestMapping("/api/requests")
 public class BloodRequestController {
     private final BloodRequestRepository bloodRequestRepository;
+    private final CurrentAdmin currentAdmin;
 
-    public BloodRequestController(BloodRequestRepository bloodRequestRepository) {
+    public BloodRequestController(BloodRequestRepository bloodRequestRepository, CurrentAdmin currentAdmin) {
         this.bloodRequestRepository = bloodRequestRepository;
+        this.currentAdmin = currentAdmin;
     }
 
     @PostMapping
@@ -34,18 +37,28 @@ public class BloodRequestController {
         request.setContactNumber(dto.contactNumber());
         request.setReason(dto.reason());
         request.setUrgency(dto.urgency() == null ? "normal" : dto.urgency());
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getAuthorities().stream().anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
+            // Public requests remain unrestricted; authenticated hospital admins use their assigned facility.
+            var account = currentAdmin.get();
+            if ("ADMIN".equals(account.getRole())) request.setHospitalAddress(account.getHospitalName());
+        }
         bloodRequestRepository.save(request);
         return new ApiMessage("Request successful");
     }
 
     @GetMapping
     public List<BloodRequest> list() {
-        return bloodRequestRepository.findAll();
+        var admin = currentAdmin.get();
+        return "SUPERADMIN".equals(admin.getRole()) ? bloodRequestRepository.findAll() : bloodRequestRepository.findByHospitalAddress(admin.getHospitalName());
     }
 
     @GetMapping("/{id}")
     public BloodRequest get(@PathVariable Long id) {
-        return bloodRequestRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+        BloodRequest request = bloodRequestRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+        currentAdmin.requireHospital(request.getHospitalAddress());
+        return request;
     }
 
     public record StatusUpdate(String status) {}
@@ -61,9 +74,7 @@ public class BloodRequestController {
 
     @DeleteMapping("/{id}")
     public ApiMessage delete(@PathVariable Long id) {
-        if (!bloodRequestRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found");
-        }
+        get(id);
         bloodRequestRepository.deleteById(id);
         return new ApiMessage("Request deleted");
     }

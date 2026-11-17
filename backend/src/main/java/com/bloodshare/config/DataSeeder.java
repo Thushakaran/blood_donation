@@ -48,11 +48,17 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (adminUserRepository.count() == 0) {
+        if (adminUserRepository.findByUsername(adminUsername).isEmpty()) {
             AdminUser admin = new AdminUser();
             admin.setUsername(adminUsername);
             admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setRole("SUPERADMIN");
             adminUserRepository.save(admin);
+        } else {
+            AdminUser bootstrapAdmin = adminUserRepository.findByUsername(adminUsername).orElseThrow();
+            bootstrapAdmin.setRole("SUPERADMIN");
+            bootstrapAdmin.setHospitalName(null);
+            adminUserRepository.save(bootstrapAdmin);
         }
 
         for (String hospital : HOSPITALS) {

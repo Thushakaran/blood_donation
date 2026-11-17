@@ -20,6 +20,11 @@ public class AdminUser {
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "user_role")
+    private String role = "ADMIN";
+
+    private String hospitalName;
+
     public Long getId() {
         return id;
     }
@@ -43,4 +48,9 @@ public class AdminUser {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getRole() { return role == null ? "ADMIN" : role; }
+    public void setRole(String role) { this.role = role; }
+    public String getHospitalName() { return hospitalName; }
+    public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
 }

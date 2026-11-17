@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/StatusBadge';
 import {
   ActivityIcon,
@@ -13,6 +14,7 @@ import {
 } from '../components/Icons';
 
 export default function Dashboard() {
+  const { isSuperAdmin, hospitalName } = useAuth();
   const [stats, setStats] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -72,7 +74,7 @@ export default function Dashboard() {
       icon: InboxIcon,
       tone: 'text-slate-700 bg-slate-100',
     },
-  ];
+  ].filter((card) => isSuperAdmin || !['Active Donors', 'Pending Verification', 'Inbox Messages'].includes(card.label));
 
   const stockByGroup = analytics?.stockByGroup || [];
   const maxStock = Math.max(1, ...stockByGroup.map((g) => g.units));
@@ -90,7 +92,9 @@ export default function Dashboard() {
             Operations Overview
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Real-time donor registry metrics, hospital blood reserves, and active clinical requests.
+            {isSuperAdmin
+              ? 'Network-wide donor registry, hospital blood reserves, and clinical requests.'
+              : `Operations and blood reserves for ${hospitalName || 'your assigned hospital'}.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -151,7 +155,7 @@ export default function Dashboard() {
                 Network Blood Units by Group
               </h2>
               <p className="mt-0.5 text-xs text-slate-500">
-                Aggregate units across 10 partner hospitals ({analytics?.totalUnits ?? 0} total units)
+                {isSuperAdmin ? 'Aggregate units across all hospitals' : `Available at ${hospitalName || 'your hospital'}`} ({analytics?.totalUnits ?? 0} total units)
               </p>
             </div>
             <Link to="/dashboard/stock" className="text-xs font-semibold text-red-600 hover:text-red-700">

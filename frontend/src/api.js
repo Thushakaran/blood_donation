@@ -24,10 +24,12 @@ async function request(path, options = {}) {
 
 export const api = {
   publicOverview: () => request('/api/public/overview'),
+  publicHospitals: () => request('/api/public/hospitals'),
   login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   stats: () => request('/api/dashboard/stats'),
   analytics: () => request('/api/dashboard/analytics'),
   registerDonor: (body) => request('/api/donors', { method: 'POST', body: JSON.stringify(body) }),
+  addDonor: (body) => request('/api/donors/admin', { method: 'POST', body: JSON.stringify(body) }),
   searchDonors: (q = '') => request(`/api/donors/search?q=${encodeURIComponent(q)}`),
   activeDonors: (q = '') => request(`/api/donors/active?q=${encodeURIComponent(q)}`),
   inactiveDonors: () => request('/api/donors/inactive'),
@@ -46,6 +48,12 @@ export const api = {
   deleteInbox: (id) => request(`/api/inbox/${id}`, { method: 'DELETE' }),
   listStock: () => request('/api/stock'),
   updateStock: (body) => request('/api/stock', { method: 'PUT', body: JSON.stringify(body) }),
+  hospitals: () => request('/api/hospitals'),
+  createHospital: (body) => request('/api/hospitals', { method: 'POST', body: JSON.stringify({ hospitalName: body.hospitalName, address: body.address, contactNumber: body.contactNumber }) }),
+  updateHospital: (hospitalName, body) => request(`/api/hospitals/${encodeURIComponent(hospitalName)}`, { method: 'PUT', body: JSON.stringify({ hospitalName, address: body.address, contactNumber: body.contactNumber }) }),
+  admins: () => request('/api/admins'),
+  createAdmin: (body) => request('/api/admins', { method: 'POST', body: JSON.stringify(body) }),
+  deleteAdmin: (id) => request(`/api/admins/${id}`, { method: 'DELETE' }),
   getProfile: () => request('/api/profile'),
   updateProfile: (body) => request('/api/profile', { method: 'PUT', body: JSON.stringify(body) }),
 };

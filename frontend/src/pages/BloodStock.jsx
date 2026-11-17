@@ -3,7 +3,8 @@ import { api } from '../api';
 import DataTable from '../components/DataTable';
 import FormField, { inputClass } from '../components/FormField';
 import StatusBadge from '../components/StatusBadge';
-import { BLOOD_GROUPS, HOSPITALS } from '../constants';
+import { BLOOD_GROUPS } from '../constants';
+import { useAuth } from '../context/AuthContext';
 import { AlertTriangleIcon, CheckCircleIcon } from '../components/Icons';
 
 function StockCell({ value }) {
@@ -25,13 +26,14 @@ function StockCell({ value }) {
 }
 
 export default function BloodStock() {
+  const { isSuperAdmin, hospitalName } = useAuth();
   const [rows, setRows] = useState([]);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ type: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    hospitalName: HOSPITALS[0],
+    hospitalName: '',
     bloodGroup: 'A+',
     action: 'increase',
     units: 1,
@@ -43,6 +45,12 @@ export default function BloodStock() {
       const [stockData, analyticsData] = await Promise.all([api.listStock(), api.analytics()]);
       setRows(stockData);
       setHistory(analyticsData?.stockHistory || []);
+      setForm((current) => ({
+        ...current,
+        hospitalName: stockData.some((row) => row.hospitalName === current.hospitalName)
+          ? current.hospitalName
+          : stockData[0]?.hospitalName || '',
+      }));
     } catch {
       setRows([]);
     } finally {
@@ -97,7 +105,7 @@ export default function BloodStock() {
           Blood Inventory Management
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          Monitor live blood unit availability across all 10 hospitals, track low-stock warnings, and log stock adjustments.
+          {isSuperAdmin ? 'Monitor and adjust blood unit availability across all hospitals.' : `Monitor and adjust blood units at ${hospitalName || 'your assigned hospital'}.`}
         </p>
       </div>
 
@@ -178,8 +186,8 @@ export default function BloodStock() {
                 value={form.hospitalName}
                 onChange={(e) => setForm({ ...form, hospitalName: e.target.value })}
               >
-                {HOSPITALS.map((hospital) => (
-                  <option key={hospital}>{hospital}</option>
+                {rows.map((row) => (
+                  <option key={row.id} value={row.hospitalName}>{row.hospitalName}</option>
                 ))}
               </select>
             </FormField>

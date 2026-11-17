@@ -20,7 +20,7 @@ const empty = {
   newDonor: true,
 };
 
-export default function RegisterDonor() {
+export default function RegisterDonor({ adminMode = false }) {
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [eligible, setEligible] = useState(false);
@@ -60,10 +60,10 @@ export default function RegisterDonor() {
         ...form,
         lastBloodDonatedDate: form.lastBloodDonatedDate || null,
       };
-      const result = await api.registerDonor(payload);
+      const result = adminMode ? await api.addDonor(payload) : await api.registerDonor(payload);
       setStatus({
         type: 'success',
-        message: `${result.message}. Your profile is queued for coordinator review and activation.`,
+        message: adminMode ? result.message : `${result.message}. Your profile is queued for coordinator review and activation.`,
       });
       setForm(empty);
       setEligible(false);
@@ -80,10 +80,12 @@ export default function RegisterDonor() {
       <div className="max-w-2xl">
         <p className="text-sm font-semibold text-red-600">Volunteer Donor Registry</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-          Donor Registration
+          {adminMode ? 'Add Donor to Registry' : 'Donor Registration'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Submit your donor profile for clinical verification. Once approved by a coordinator, hospitals and patients can match with you during blood shortages.
+          {adminMode
+            ? 'Create a verified donor record for the network. Make sure the donor has agreed to be contacted.'
+            : 'Submit your donor profile for clinical verification. Once approved by a coordinator, hospitals and patients can match with you during blood shortages.'}
         </p>
       </div>
 

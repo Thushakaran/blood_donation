@@ -34,13 +34,15 @@ public class AuthController {
         if (!passwordEncoder.matches(request.password(), admin.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or password do not match");
         }
-        return new LoginResponse(jwtService.generateToken(admin.getUsername()), admin.getUsername());
+        return new LoginResponse(jwtService.generateToken(admin.getUsername()), admin.getUsername(), admin.getRole(), admin.getHospitalName());
     }
 
     @GetMapping("/me")
     public LoginResponse me(@RequestHeader("Authorization") String authorization) {
         String token = authorization.replace("Bearer ", "");
         String username = jwtService.extractUsername(token);
-        return new LoginResponse(token, username);
+        var admin = adminUserRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account not found"));
+        return new LoginResponse(token, username, admin.getRole(), admin.getHospitalName());
     }
 }

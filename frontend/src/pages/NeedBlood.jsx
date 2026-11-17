@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import FormField, { inputClass } from '../components/FormField';
@@ -20,10 +20,20 @@ const empty = {
 };
 
 export default function NeedBlood() {
+  const [hospitals, setHospitals] = useState(HOSPITALS);
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ type: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    api.publicHospitals().then((names) => {
+      if (Array.isArray(names) && names.length) {
+        setHospitals(names);
+        setForm((current) => ({ ...current, hospitalAddress: names.includes(current.hospitalAddress) ? current.hospitalAddress : names[0] }));
+      }
+    }).catch(() => {});
+  }, []);
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -166,7 +176,7 @@ export default function NeedBlood() {
                 value={form.hospitalAddress}
                 onChange={(e) => update('hospitalAddress', e.target.value)}
               >
-                {HOSPITALS.map((hospital) => (
+                {hospitals.map((hospital) => (
                   <option key={hospital}>{hospital}</option>
                 ))}
               </select>

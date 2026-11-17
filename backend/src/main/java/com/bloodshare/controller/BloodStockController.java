@@ -4,6 +4,7 @@ import com.bloodshare.dto.ApiMessage;
 import com.bloodshare.dto.StockUpdateRequest;
 import com.bloodshare.entity.BloodStock;
 import com.bloodshare.repository.BloodStockRepository;
+import com.bloodshare.security.CurrentAdmin;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,18 +16,23 @@ import java.util.List;
 @RequestMapping("/api/stock")
 public class BloodStockController {
     private final BloodStockRepository bloodStockRepository;
+    private final CurrentAdmin currentAdmin;
 
-    public BloodStockController(BloodStockRepository bloodStockRepository) {
+    public BloodStockController(BloodStockRepository bloodStockRepository, CurrentAdmin currentAdmin) {
         this.bloodStockRepository = bloodStockRepository;
+        this.currentAdmin = currentAdmin;
     }
 
     @GetMapping
     public List<BloodStock> list() {
-        return bloodStockRepository.findAll();
+        var admin = currentAdmin.get();
+        if ("SUPERADMIN".equals(admin.getRole())) return bloodStockRepository.findAll();
+        return bloodStockRepository.findByHospitalName(admin.getHospitalName()).stream().toList();
     }
 
     @PutMapping
     public ApiMessage update(@Valid @RequestBody StockUpdateRequest request) {
+        currentAdmin.requireHospital(request.hospitalName());
         if (!"increase".equalsIgnoreCase(request.action()) && !"decrease".equalsIgnoreCase(request.action())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Action must be increase or decrease");
         }

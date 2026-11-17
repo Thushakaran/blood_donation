@@ -4,6 +4,7 @@ import com.bloodshare.dto.ApiMessage;
 import com.bloodshare.dto.DonorRequest;
 import com.bloodshare.entity.Donor;
 import com.bloodshare.repository.DonorRepository;
+import com.bloodshare.security.CurrentAdmin;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,11 @@ import java.util.List;
 @RequestMapping("/api/donors")
 public class DonorController {
     private final DonorRepository donorRepository;
+    private final CurrentAdmin currentAdmin;
 
-    public DonorController(DonorRepository donorRepository) {
+    public DonorController(DonorRepository donorRepository, CurrentAdmin currentAdmin) {
         this.donorRepository = donorRepository;
+        this.currentAdmin = currentAdmin;
     }
 
     @PostMapping
@@ -26,6 +29,15 @@ public class DonorController {
         donor.setActive(false);
         donorRepository.save(donor);
         return new ApiMessage("Registration successful");
+    }
+
+    @PostMapping("/admin")
+    public ApiMessage addBySuperAdmin(@Valid @RequestBody DonorRequest request) {
+        currentAdmin.requireSuperAdmin();
+        Donor donor = map(request);
+        donor.setActive(true);
+        donorRepository.save(donor);
+        return new ApiMessage("Donor added to the active registry");
     }
 
     @GetMapping("/search")
@@ -38,6 +50,7 @@ public class DonorController {
 
     @GetMapping("/active")
     public List<Donor> active(@RequestParam(required = false) String q) {
+        currentAdmin.requireSuperAdmin();
         if (q == null || q.isBlank()) {
             return donorRepository.findByActiveTrue();
         }
@@ -46,11 +59,13 @@ public class DonorController {
 
     @GetMapping("/inactive")
     public List<Donor> inactive() {
+        currentAdmin.requireSuperAdmin();
         return donorRepository.findByActiveFalse();
     }
 
     @PutMapping("/{id}/activate")
     public ApiMessage activate(@PathVariable Long id) {
+        currentAdmin.requireSuperAdmin();
         Donor donor = donorRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Donor not found"));
         donor.setActive(true);
@@ -62,6 +77,7 @@ public class DonorController {
 
     @PutMapping("/{id}/availability")
     public ApiMessage availability(@PathVariable Long id, @RequestBody AvailabilityUpdate update) {
+        currentAdmin.requireSuperAdmin();
         Donor donor = donorRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Donor not found"));
         donor.setAvailable(update.available()); donorRepository.save(donor);
         return new ApiMessage("Donor availability updated");
@@ -69,6 +85,7 @@ public class DonorController {
 
     @DeleteMapping("/{id}")
     public ApiMessage delete(@PathVariable Long id) {
+        currentAdmin.requireSuperAdmin();
         if (!donorRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Donor not found");
         }

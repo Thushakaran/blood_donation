@@ -21,7 +21,7 @@ mvnw.cmd spring-boot:run
 
 The API starts at `http://localhost:8081`. Make sure the datasource configured in `backend/src/main/resources/application.properties` is available before starting the backend.
 
-The local default admin login is `admin` / `admin123`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to override it.
+The local bootstrap super admin login is `admin` / `admin123`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` to override it. Sign in at `/login`; the bootstrap account has network-wide `SUPERADMIN` access. A super admin can add hospitals, create hospital-scoped `ADMIN` accounts, and add verified donors. Each hospital admin can manage only its assigned hospital's stock, details, and blood requests.
 
 ### Frontend
 

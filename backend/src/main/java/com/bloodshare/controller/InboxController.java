@@ -4,6 +4,7 @@ import com.bloodshare.dto.ApiMessage;
 import com.bloodshare.dto.InboxRequest;
 import com.bloodshare.entity.InboxMessage;
 import com.bloodshare.repository.InboxMessageRepository;
+import com.bloodshare.security.CurrentAdmin;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,11 @@ import java.util.List;
 @RequestMapping("/api/inbox")
 public class InboxController {
     private final InboxMessageRepository inboxMessageRepository;
+    private final CurrentAdmin currentAdmin;
 
-    public InboxController(InboxMessageRepository inboxMessageRepository) {
+    public InboxController(InboxMessageRepository inboxMessageRepository, CurrentAdmin currentAdmin) {
         this.inboxMessageRepository = inboxMessageRepository;
+        this.currentAdmin = currentAdmin;
     }
 
     @PostMapping
@@ -34,11 +37,13 @@ public class InboxController {
 
     @GetMapping
     public List<InboxMessage> list() {
+        currentAdmin.requireSuperAdmin();
         return inboxMessageRepository.findAll();
     }
 
     @DeleteMapping("/{id}")
     public ApiMessage delete(@PathVariable Long id) {
+        currentAdmin.requireSuperAdmin();
         if (!inboxMessageRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found");
         }

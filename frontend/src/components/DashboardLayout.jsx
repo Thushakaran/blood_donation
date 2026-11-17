@@ -27,19 +27,22 @@ const navSections = [
       { to: '/dashboard', label: 'Overview', icon: LayoutGridIcon, end: true },
       { to: '/dashboard/requests', label: 'Blood Requests', icon: ClipboardListIcon },
       { to: '/dashboard/stock', label: 'Blood Inventory', icon: ActivityIcon },
+      { to: '/dashboard/hospitals', label: 'Hospital Details', icon: ActivityIcon },
+      { to: '/dashboard/admins', label: 'Manage Admins', icon: UserIcon, superAdminOnly: true },
     ],
   },
   {
     label: 'Donor Registry',
     items: [
-      { to: '/dashboard/active-donors', label: 'Active Donors', icon: UserCheckIcon },
-      { to: '/dashboard/inactive-donors', label: 'Pending Donors', icon: UserClockIcon },
+      { to: '/dashboard/active-donors', label: 'Active Donors', icon: UserCheckIcon, superAdminOnly: true },
+      { to: '/dashboard/inactive-donors', label: 'Pending Donors', icon: UserClockIcon, superAdminOnly: true },
+      { to: '/dashboard/add-donor', label: 'Add Donor', icon: UserCheckIcon, superAdminOnly: true },
     ],
   },
   {
     label: 'Communications & Account',
     items: [
-      { to: '/dashboard/inbox', label: 'Inbox', icon: InboxIcon },
+      { to: '/dashboard/inbox', label: 'Inbox', icon: InboxIcon, superAdminOnly: true },
       { to: '/dashboard/profile', label: 'Profile & Settings', icon: UserIcon },
     ],
   },
@@ -53,10 +56,13 @@ const PAGE_TITLES = {
   '/dashboard/stock': 'Blood Inventory',
   '/dashboard/inbox': 'Hospital & Donor Inbox',
   '/dashboard/profile': 'Coordinator Profile',
+  '/dashboard/admins': 'Hospital Admins',
+  '/dashboard/hospitals': 'Hospital Management',
+  '/dashboard/add-donor': 'Add Donor',
 };
 
 export default function DashboardLayout() {
-  const { isAdmin, user, logout } = useAuth();
+  const { isAdmin, isSuperAdmin, role, hospitalName, user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -87,6 +93,17 @@ export default function DashboardLayout() {
     ? 'Request Details'
     : PAGE_TITLES[location.pathname] || 'Dashboard';
 
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.superAdminOnly) return isSuperAdmin;
+        if (item.adminOnly) return role === 'ADMIN';
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
+
   const sidebarContent = (
     <div className="flex h-full flex-col justify-between bg-white">
       <div>
@@ -108,14 +125,14 @@ export default function DashboardLayout() {
         </div>
 
         <nav className="space-y-6 px-3 py-5" aria-label="Dashboard sidebar">
-          {navSections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.label}>
               <p className="px-3 text-xs font-semibold text-slate-400">{section.label}</p>
               <div className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <NavLink
+              <NavLink
                       key={item.to}
                       to={item.to}
                       end={item.end}
@@ -160,7 +177,7 @@ export default function DashboardLayout() {
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-slate-900">{user || 'admin'}</p>
-            <p className="truncate text-xs text-slate-500">Blood Bank Coordinator</p>
+            <p className="truncate text-xs text-slate-500">{isSuperAdmin ? 'Super Admin' : hospitalName || 'Hospital Admin'}</p>
           </div>
         </Link>
 

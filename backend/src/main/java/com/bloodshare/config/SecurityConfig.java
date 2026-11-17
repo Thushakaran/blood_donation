@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET,
                                 "/", "/index.html", "/assets/**", "/favicon.svg", "/icons.svg",
-                                "/about", "/contact", "/admin", "/register", "/need-blood", "/search",
+                                "/about", "/contact", "/admin", "/login", "/register", "/need-blood", "/search",
                                 "/dashboard", "/dashboard/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/donors").permitAll()
