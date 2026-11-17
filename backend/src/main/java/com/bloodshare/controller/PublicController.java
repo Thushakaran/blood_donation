@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.util.List;
+import com.bloodshare.service.BloodStockTotals;
 
 @RestController
 @RequestMapping("/api/public")
@@ -21,9 +22,10 @@ public class PublicController {
     }
     @GetMapping("/overview")
     public Map<String, Object> overview() {
-        long units = stock.findAll().stream().mapToLong(s -> s.getAPositive()+s.getANegative()+s.getBPositive()+s.getBNegative()+s.getAbPositive()+s.getAbNegative()+s.getOPositive()+s.getONegative()).sum();
+        var stockByGroup = BloodStockTotals.byGroup(stock.findAll());
+        long units = BloodStockTotals.total(stockByGroup);
         var recent = requests.findAll().stream().filter(r -> !"Fulfilled".equals(r.getStatus())).limit(4).toList();
         long fulfilled = requests.findAll().stream().filter(r -> "Fulfilled".equals(r.getStatus())).count();
-        return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
+        return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "stockByGroup", stockByGroup, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
     }
 }
