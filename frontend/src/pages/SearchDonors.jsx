@@ -80,7 +80,7 @@ export default function SearchDonors() {
   }
 
   useEffect(() => {
-    load();
+    load(query);
   }, []);
 
   const filteredRows = useMemo(() => {

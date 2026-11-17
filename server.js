@@ -604,6 +604,32 @@ app.get('/api/public/overview', (_req, res) => {
   const availableUnits = stockByGroup.reduce((sum, g) => sum + g.units, 0);
   const fulfilledCount = bloodRequests.filter((r) => r.status === 'Fulfilled').length;
 
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const urgencyRank = (urgency) => {
+    if (!urgency) return 2;
+    if (/critical/i.test(urgency)) return 0;
+    if (/urgent/i.test(urgency)) return 1;
+    return 2;
+  };
+  const recentRequests = bloodRequests
+    .filter((r) => r.status !== 'Fulfilled' && (!r.requiredDate || r.requiredDate >= todayIso))
+    .sort((a, b) => {
+      const rankDiff = urgencyRank(a.urgency) - urgencyRank(b.urgency);
+      if (rankDiff !== 0) return rankDiff;
+      return (a.requiredDate || '9999-12-31').localeCompare(b.requiredDate || '9999-12-31');
+    })
+    .slice(0, 4)
+    .map((r) => ({
+      id: r.id,
+      bloodGroupType: r.bloodGroupType,
+      units: r.units,
+      hospitalAddress: r.hospitalAddress,
+      requiredDate: r.requiredDate,
+      urgency: r.urgency || 'normal',
+      status: r.status || 'Pending',
+      reason: r.reason,
+    }));
+
   return res.json({
     totalDonors: donors.length,
     activeDonors: donors.filter((d) => d.active).length,
@@ -611,19 +637,7 @@ app.get('/api/public/overview', (_req, res) => {
     successfulDonations: successfulDonationsBaseline + donors.filter((d) => d.active).length,
     requestsFulfilled: fulfilledRequestsOffset + fulfilledCount,
     stockByGroup,
-    recentRequests: bloodRequests
-      .filter((r) => r.status !== 'Fulfilled')
-      .slice(0, 4)
-      .map((r) => ({
-        id: r.id,
-        bloodGroupType: r.bloodGroupType,
-        units: r.units,
-        hospitalAddress: r.hospitalAddress,
-        requiredDate: r.requiredDate,
-        urgency: r.urgency || 'normal',
-        status: r.status || 'Pending',
-        reason: r.reason,
-      })),
+    recentRequests,
   });
 });
 
