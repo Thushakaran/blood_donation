@@ -59,7 +59,7 @@ export default function Contact() {
       <div className="mt-8 grid gap-8 lg:grid-cols-12">
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-7"
+          className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 lg:col-span-7"
           noValidate
         >
           <h2 className="text-lg font-semibold text-slate-900">Send Us a Message</h2>
@@ -140,14 +140,14 @@ export default function Contact() {
         </form>
 
         <aside className="space-y-6 lg:col-span-5">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
             <h2 className="text-lg font-semibold text-slate-900">Regional Coordination Desk</h2>
             <p className="mt-2 text-sm text-slate-600">
               Available Monday through Sunday for emergency blood stock coordination and donor support.
             </p>
             <div className="mt-6 space-y-4">
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 ring-1 ring-red-100">
                   <MapPinIcon className="h-4 w-4" />
                 </div>
                 <div>
@@ -156,7 +156,7 @@ export default function Contact() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 ring-1 ring-red-100">
                   <PhoneIcon className="h-4 w-4" />
                 </div>
                 <div>
@@ -165,7 +165,7 @@ export default function Contact() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 ring-1 ring-red-100">
                   <MailIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">

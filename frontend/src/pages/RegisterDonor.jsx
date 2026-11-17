@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { api } from '../api';
+import BloodGroupPicker from '../components/BloodGroupPicker';
 import FormField, { inputClass } from '../components/FormField';
-import { BLOOD_GROUPS, DISTRICTS, PROVINCES } from '../constants';
+import { DISTRICTS, PROVINCES } from '../constants';
 import { CheckCircleIcon, ShieldCheckIcon } from '../components/Icons';
 
 const empty = {
@@ -75,6 +76,11 @@ export default function RegisterDonor({ adminMode = false }) {
     }
   }
 
+  const step1Complete = Boolean(form.name.trim() && form.fatherName.trim() && form.dateOfBirth);
+  const step2Complete = Boolean(form.bloodGroup && form.bodyWeight);
+  const step3Complete = Boolean(form.email.trim() && form.contactNumber.trim() && form.address.trim());
+  const completedSteps = [step1Complete, step2Complete, step3Complete].filter(Boolean).length;
+
   return (
     <div className={adminMode ? 'space-y-2' : 'mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'}>
       <div className="max-w-2xl">
@@ -92,9 +98,30 @@ export default function RegisterDonor({ adminMode = false }) {
       <div className="mt-8 grid gap-8 lg:grid-cols-12">
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-8"
+          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 lg:col-span-8"
           noValidate
         >
+          <div className="space-y-2 border-b border-slate-100 pb-5">
+            <div className="flex items-center justify-between gap-2 text-xs font-medium text-slate-500">
+              <span>Registration Completion</span>
+              <span className="font-mono tabular-nums text-slate-700">{completedSteps} / 3 sections</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: '01. Personal', done: step1Complete },
+                { label: '02. Medical', done: step2Complete },
+                { label: '03. Contact', done: step3Complete },
+              ].map((step) => (
+                <div key={step.label} className="space-y-1.5">
+                  <div className={`h-1.5 w-full rounded-full transition-colors duration-200 ${step.done ? 'bg-red-600' : 'bg-slate-200'}`} />
+                  <p className={`truncate text-xs font-medium ${step.done ? 'text-red-700' : 'text-slate-500'}`}>
+                    {step.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {status.message ? (
             <div
               className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 text-sm ${
@@ -152,17 +179,14 @@ export default function RegisterDonor({ adminMode = false }) {
           <div className="border-t border-slate-100 pt-6">
             <h2 className="text-base font-semibold text-slate-900">02. Medical & Blood Profile</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <FormField label="Blood Group">
-                <select
-                  className={inputClass}
+              <div className="sm:col-span-2">
+                <BloodGroupPicker
+                  label="Blood Group"
+                  required
                   value={form.bloodGroup}
-                  onChange={(e) => update('bloodGroup', e.target.value)}
-                >
-                  {BLOOD_GROUPS.map((group) => (
-                    <option key={group}>{group}</option>
-                  ))}
-                </select>
-              </FormField>
+                  onChange={(group) => update('bloodGroup', group)}
+                />
+              </div>
               <FormField label="Body Weight (kg)" required error={errors.bodyWeight}>
                 <input
                   className={inputClass}

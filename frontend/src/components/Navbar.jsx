@@ -35,9 +35,9 @@ export default function Navbar() {
               to={link.to}
               end={link.to === '/'}
               className={({ isActive }) =>
-                `shrink-0 whitespace-nowrap py-1 text-sm font-medium transition-colors ${
+                `relative shrink-0 whitespace-nowrap py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'border-b-2 border-red-600 text-red-600'
+                    ? 'text-red-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-red-600'
                     : 'text-slate-600 hover:text-slate-900'
                 }`
               }
@@ -50,13 +50,13 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <Link
             to={isAdmin ? '/dashboard' : '/login'}
-            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:inline-flex lg:px-4"
+            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:inline-flex lg:px-4"
           >
             {isAdmin ? 'Dashboard' : 'Sign In'}
           </Link>
           <Link
             to="/register"
-            className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:inline-flex lg:px-4"
+            className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-red-700 sm:inline-flex lg:px-4"
           >
             Donate Blood
           </Link>

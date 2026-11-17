@@ -29,6 +29,7 @@ export default function BloodStock() {
   const { isSuperAdmin, hospitalName } = useAuth();
   const [rows, setRows] = useState([]);
   const [history, setHistory] = useState([]);
+  const [matrixFilter, setMatrixFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ type: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
@@ -83,6 +84,12 @@ export default function BloodStock() {
 
   const lowGroups = groupSummaries.filter((g) => g.level !== 'Optimal');
 
+  const matrixRows = useMemo(() => {
+    if (matrixFilter !== 'low') return rows;
+    const stockKeys = ['aPositive', 'aNegative', 'bPositive', 'bNegative', 'abPositive', 'abNegative', 'oPositive', 'oNegative'];
+    return rows.filter((row) => stockKeys.some((key) => Number(row[key] || 0) <= 5));
+  }, [rows, matrixFilter]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitting(true);
@@ -132,7 +139,12 @@ export default function BloodStock() {
                 ? 'bg-amber-500'
                 : 'bg-emerald-600';
           return (
-            <div key={item.group} className="rounded-xl border border-slate-200 bg-white p-5">
+            <div
+              key={item.group}
+              className={`rounded-xl border bg-white p-5 shadow-xs transition-colors ${
+                item.level === 'Critical' ? 'border-red-200 bg-red-50/20' : 'border-slate-200'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-2xl font-bold text-red-600">{item.group}</span>
                 <StatusBadge
@@ -161,7 +173,7 @@ export default function BloodStock() {
       {/* Adjust Inventory Form */}
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border border-slate-200 bg-white p-6"
+        className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs"
       >
         <h2 className="text-base font-semibold text-slate-900">Adjust Hospital Blood Stock</h2>
         {status.message ? (
@@ -242,29 +254,84 @@ export default function BloodStock() {
 
       {/* Hospital Matrix Table */}
       <section className="space-y-3">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-base font-semibold text-slate-900">Hospital Stock Matrix</h2>
-          <p className="text-xs text-slate-500">
-            Red cells: critical (&le;2 units) · Amber cells: low (&le;5 units)
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Hospital Stock Matrix</h2>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Red cells: critical (&le;2 units) · Amber cells: low (&le;5 units)
+            </p>
+          </div>
+          <div className="inline-flex self-start rounded-lg border border-slate-200 bg-white p-1 sm:self-end">
+            <button
+              type="button"
+              onClick={() => setMatrixFilter('all')}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                matrixFilter === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              All Hospitals ({rows.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setMatrixFilter('low')}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                matrixFilter === 'low' ? 'bg-red-600 text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Low / Critical Only
+            </button>
+          </div>
         </div>
-        <DataTable
-          rows={rows}
-          loading={loading}
-          empty="No hospital stock records found"
-          columns={[
-            { key: 'index', label: '#', render: (_, i) => <span className="font-mono text-xs text-slate-500">{i + 1}</span> },
-            { key: 'hospitalName', label: 'Hospital', render: (row) => <span className="font-medium text-slate-900">{row.hospitalName}</span> },
-            { key: 'aPositive', label: 'A+', align: 'right', render: (r) => <StockCell value={r.aPositive} /> },
-            { key: 'aNegative', label: 'A-', align: 'right', render: (r) => <StockCell value={r.aNegative} /> },
-            { key: 'bPositive', label: 'B+', align: 'right', render: (r) => <StockCell value={r.bPositive} /> },
-            { key: 'bNegative', label: 'B-', align: 'right', render: (r) => <StockCell value={r.bNegative} /> },
-            { key: 'abPositive', label: 'AB+', align: 'right', render: (r) => <StockCell value={r.abPositive} /> },
-            { key: 'abNegative', label: 'AB-', align: 'right', render: (r) => <StockCell value={r.abNegative} /> },
-            { key: 'oPositive', label: 'O+', align: 'right', render: (r) => <StockCell value={r.oPositive} /> },
-            { key: 'oNegative', label: 'O-', align: 'right', render: (r) => <StockCell value={r.oNegative} /> },
-          ]}
-        />
+
+        {loading ? (
+          <div className="h-56 animate-pulse rounded-xl border border-slate-200 bg-white" />
+        ) : matrixRows.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center">
+            <p className="text-sm font-medium text-slate-900">
+              {matrixFilter === 'low' ? 'No hospitals have low or critical stock' : 'No hospital stock records found'}
+            </p>
+            {matrixFilter === 'low' ? (
+              <p className="mt-1 text-xs text-slate-500">All listed hospitals hold more than 5 units in every blood group.</p>
+            ) : null}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
+                    <th className="sticky left-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 sm:px-4 sm:py-3">Hospital</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">A+</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">A-</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">B+</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">B-</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">AB+</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">AB-</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">O+</th>
+                    <th className="whitespace-nowrap px-3 py-2.5 text-right sm:px-4 sm:py-3">O-</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {matrixRows.map((row) => (
+                    <tr key={row.id} className="group transition-colors hover:bg-slate-50/90">
+                      <td className="sticky left-0 z-10 max-w-[180px] truncate bg-white px-3 py-2.5 font-medium text-slate-900 group-hover:bg-slate-50 sm:max-w-none sm:px-4 sm:py-3">
+                        {row.hospitalName}
+                      </td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.aPositive} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.aNegative} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.bPositive} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.bNegative} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.abPositive} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.abNegative} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.oPositive} /></td>
+                      <td className="px-3 py-2.5 text-right sm:px-4 sm:py-3"><StockCell value={row.oNegative} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Inventory Adjustment History */}

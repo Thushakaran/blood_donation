@@ -103,7 +103,7 @@ export default function SearchDonors() {
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
         <form
           className="grid gap-3 md:grid-cols-12"
           onSubmit={(event) => {
@@ -201,9 +201,26 @@ export default function SearchDonors() {
             emptyDetail="Try clearing the blood group or district filters."
           />
         ) : loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-44 animate-pulse rounded-xl border border-slate-200 bg-white" />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div key={item} className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200" />
+                    <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
+                  </div>
+                  <div className="h-10 w-12 shrink-0 animate-pulse rounded-lg bg-red-50" />
+                </div>
+                <div className="mt-5 space-y-2.5">
+                  <div className="h-3 w-3/4 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-5/6 animate-pulse rounded bg-slate-100" />
+                </div>
+                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3.5">
+                  <div className="h-5 w-20 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredRows.length === 0 ? (
@@ -218,7 +235,7 @@ export default function SearchDonors() {
             {filteredRows.map((donor) => (
               <article
                 key={donor.id}
-                className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300"
+                className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
@@ -228,7 +245,7 @@ export default function SearchDonors() {
                         {donor.gender === 'female' ? 'Female' : 'Male'} · {donor.bodyWeight} kg
                       </p>
                     </div>
-                    <span className="flex h-10 w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 font-mono text-sm font-bold text-red-700">
+                    <span className="flex h-10 w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 font-mono text-sm font-bold text-red-700 ring-1 ring-red-200/70">
                       {donor.bloodGroup}
                     </span>
                   </div>
@@ -242,11 +259,15 @@ export default function SearchDonors() {
                     </p>
                     <p className="flex items-center gap-2 font-mono tabular-nums">
                       <PhoneIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      <span>{donor.contactNumber}</span>
+                      <a href={`tel:${donor.contactNumber}`} className="transition-colors hover:text-red-600">
+                        {donor.contactNumber}
+                      </a>
                     </p>
                     <p className="flex items-center gap-2 truncate">
                       <MailIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      <span className="truncate">{donor.email}</span>
+                      <a href={`mailto:${donor.email}`} className="truncate transition-colors hover:text-red-600">
+                        {donor.email}
+                      </a>
                     </p>
                   </div>
                 </div>

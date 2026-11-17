@@ -172,15 +172,19 @@ export default function DashboardLayout() {
                       end={item.end}
                       onClick={() => setSidebarOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                           isActive
-                            ? 'bg-red-50 text-red-700'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            ? 'bg-red-50/90 font-semibold text-red-700 ring-1 ring-red-200/70'
+                            : 'font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                         }`
                       }
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      {({ isActive }) => (
+                        <>
+                          <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-red-600' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </>
+                      )}
                     </NavLink>
                   );
                 })}
@@ -263,6 +267,9 @@ export default function DashboardLayout() {
               </Link>
               <ChevronRightIcon className="hidden h-4 w-4 shrink-0 text-slate-400 sm:inline" />
               <span className="truncate font-semibold text-slate-900">{pageTitle}</span>
+              <span className="hidden truncate text-xs text-slate-400 md:inline">
+                · {isSuperAdmin ? 'All Hospitals' : hospitalName || 'Hospital Console'}
+              </span>
             </div>
           </div>
 
@@ -289,7 +296,7 @@ export default function DashboardLayout() {
               </button>
 
               {notifOpen ? (
-                <div className="fixed inset-x-3 top-[4.25rem] z-50 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96">
+                <div className="fixed inset-x-3 top-[4.25rem] z-50 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96">
                   <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900">Notification Log</p>

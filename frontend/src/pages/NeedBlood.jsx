@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
+import BloodGroupPicker from '../components/BloodGroupPicker';
 import FormField, { inputClass } from '../components/FormField';
-import { BLOOD_GROUPS, HOSPITALS } from '../constants';
+import { HOSPITALS } from '../constants';
 import { AlertTriangleIcon, CheckCircleIcon, PhoneIcon } from '../components/Icons';
 
 const empty = {
@@ -85,7 +86,7 @@ export default function NeedBlood() {
       <div className="mt-8 grid gap-8 lg:grid-cols-12">
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-8"
+          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 lg:col-span-8"
           noValidate
         >
           {status.message ? (
@@ -149,17 +150,14 @@ export default function NeedBlood() {
                 <option value="female">Female</option>
               </select>
             </FormField>
-            <FormField label="Blood Group Required">
-              <select
-                className={inputClass}
+            <div className="sm:col-span-2">
+              <BloodGroupPicker
+                label="Blood Group Required"
+                required
                 value={form.bloodGroupType}
-                onChange={(e) => update('bloodGroupType', e.target.value)}
-              >
-                {BLOOD_GROUPS.map((group) => (
-                  <option key={group}>{group}</option>
-                ))}
-              </select>
-            </FormField>
+                onChange={(group) => update('bloodGroupType', group)}
+              />
+            </div>
             <FormField label="Units Required" required error={errors.units}>
               <input
                 className={inputClass}
@@ -234,7 +232,7 @@ export default function NeedBlood() {
         </form>
 
         <aside className="space-y-6 lg:col-span-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
             <div className="flex items-center gap-2 text-red-600">
               <AlertTriangleIcon className="h-5 w-5" />
               <h3 className="text-base font-semibold text-slate-900">Emergency Protocol</h3>

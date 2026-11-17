@@ -129,7 +129,7 @@ export default function Dashboard() {
             <Link
               key={card.label}
               to={card.to}
-              className="group rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300"
+              className="group rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-slate-600">{card.label}</p>
@@ -140,7 +140,10 @@ export default function Dashboard() {
               <p className="mt-3 font-mono text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
                 {loading ? '...' : card.value}
               </p>
-              <p className="mt-1 text-xs text-slate-500 group-hover:text-slate-700">{card.sub}</p>
+              <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-500 group-hover:text-slate-700">
+                <span>{card.sub}</span>
+                <ArrowRightIcon className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+              </div>
             </Link>
           );
         })}
@@ -148,7 +151,7 @@ export default function Dashboard() {
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-12">
-        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-7">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 lg:col-span-7">
           <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
             <div className="min-w-0">
               <h2 className="text-base font-semibold text-slate-900">
@@ -209,7 +212,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-5">
+        <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 lg:col-span-5">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">
@@ -225,7 +228,7 @@ export default function Dashboard() {
               Donations
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-sm bg-slate-300" />
+              <span className="h-2.5 w-2.5 rounded-sm bg-slate-400" />
               Requests
             </span>
           </div>
@@ -235,21 +238,46 @@ export default function Dashboard() {
               Monthly totals will appear when dated donation and request history is available.
             </p>
           ) : (
-            <div className="mt-6 overflow-x-auto">
-              <div className="flex h-44 min-w-[260px] items-end justify-between gap-3 border-b border-slate-100 pb-2">
-                {monthly.map((item) => {
-                  const donH = Math.round((item.donations / maxMonthly) * 140);
-                  const reqH = Math.round((item.requests / maxMonthly) * 140);
-                  return (
-                    <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
-                      <div className="flex items-end gap-1">
-                        <div className="w-3.5 rounded-t bg-red-600 transition-all" style={{ height: `${donH}px` }} title={`${item.donations} donations`} />
-                        <div className="w-3.5 rounded-t bg-slate-300 transition-all" style={{ height: `${reqH}px` }} title={`${item.requests} requests`} />
-                      </div>
-                      <span className="font-mono text-xs text-slate-500">{item.month}</span>
+            <div className="mt-6 overflow-x-auto pt-4">
+              <div className="relative min-w-[270px]">
+                {/* Horizontal gridlines */}
+                <div className="pointer-events-none absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between">
+                  {[maxMonthly, Math.round(maxMonthly / 2), 0].map((tick, idx) => (
+                    <div key={`${tick}-${idx}`} className="flex items-center gap-2">
+                      <span className="w-6 shrink-0 text-right font-mono text-[10px] text-slate-400 tabular-nums">
+                        {tick}
+                      </span>
+                      <div className="h-px flex-1 border-b border-dashed border-slate-200/80" />
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+
+                <div className="relative flex h-44 items-end justify-between gap-2 pl-8 pb-6">
+                  {monthly.map((item) => {
+                    const donH = Math.max(item.donations > 0 ? 6 : 0, Math.round((item.donations / maxMonthly) * 136));
+                    const reqH = Math.max(item.requests > 0 ? 6 : 0, Math.round((item.requests / maxMonthly) * 136));
+                    return (
+                      <div key={item.month} className="group relative flex flex-1 flex-col items-center justify-end">
+                        <div className="pointer-events-none absolute -top-6 z-10 hidden whitespace-nowrap rounded-md bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-white shadow-sm group-hover:block tabular-nums">
+                          {item.donations}D · {item.requests}R
+                        </div>
+                        <div className="flex h-[136px] items-end gap-1">
+                          <div
+                            className="w-3 rounded-t-sm bg-red-600 transition-opacity duration-150 group-hover:opacity-90 sm:w-3.5"
+                            style={{ height: `${donH}px` }}
+                            title={`${item.donations} donations`}
+                          />
+                          <div
+                            className="w-3 rounded-t-sm bg-slate-400 transition-opacity duration-150 group-hover:opacity-90 sm:w-3.5"
+                            style={{ height: `${reqH}px` }}
+                            title={`${item.requests} requests`}
+                          />
+                        </div>
+                        <span className="absolute -bottom-6 font-mono text-xs text-slate-500">{item.month}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

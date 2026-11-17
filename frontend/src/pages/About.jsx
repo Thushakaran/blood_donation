@@ -34,7 +34,7 @@ export default function About() {
         </p>
       </div>
 
-      <div className="mt-10 grid items-stretch gap-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:grid-cols-12">
+      <div className="mt-10 grid items-stretch gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 lg:grid-cols-12">
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:col-span-6">
           {labImgFailed ? (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center bg-slate-100 p-8 text-center">
@@ -88,7 +88,7 @@ export default function About() {
         </div>
       </div>
 
-      <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Connected Partner Hospitals</h2>
@@ -101,7 +101,7 @@ export default function About() {
           {HOSPITALS.map((hospital) => (
             <div
               key={hospital}
-              className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5"
+              className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 transition-colors hover:border-slate-300 hover:bg-white"
             >
               <BuildingIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
               <span className="text-xs font-medium leading-snug text-slate-800">{hospital}</span>

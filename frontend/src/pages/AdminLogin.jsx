@@ -36,9 +36,9 @@ export default function AdminLogin() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col justify-center px-4 py-16 sm:py-24">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white shadow-xs">
             <DropletFillIcon className="h-5 w-5" />
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
