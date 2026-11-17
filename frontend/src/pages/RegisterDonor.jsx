@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api';
 import BloodGroupPicker from '../components/BloodGroupPicker';
 import FormField, { inputClass } from '../components/FormField';
-import { DISTRICTS, PROVINCES } from '../constants';
-import { CheckCircleIcon, ShieldCheckIcon } from '../components/Icons';
+import { PROVINCES, PROVINCE_DISTRICTS } from '../constants';
+import { ArrowRightIcon, CheckCircleIcon, ShieldCheckIcon } from '../components/Icons';
+
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 const empty = {
   name: '',
@@ -21,6 +24,19 @@ const empty = {
   newDonor: true,
 };
 
+function calculateAge(dobString) {
+  if (!dobString) return null;
+  const [y, m, d] = dobString.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  const today = new Date();
+  let age = today.getFullYear() - y;
+  const monthDiff = today.getMonth() + 1 - m;
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d)) {
+    age -= 1;
+  }
+  return age;
+}
+
 export default function RegisterDonor({ adminMode = false }) {
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
@@ -29,10 +45,36 @@ export default function RegisterDonor({ adminMode = false }) {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
 
+  const availableDistricts = useMemo(
+    () => PROVINCE_DISTRICTS[form.province] || PROVINCE_DISTRICTS.Northern,
+    [form.province]
+  );
+
   function update(field, value) {
-    setForm((current) => ({ ...current, [field]: value }));
-    if (errors[field]) {
-      setErrors((current) => ({ ...current, [field]: '' }));
+    setForm((current) => {
+      if (field === 'province') {
+        const nextDistricts = PROVINCE_DISTRICTS[value] || [];
+        const nextDistrict = nextDistricts.includes(current.district)
+          ? current.district
+          : nextDistricts[0] || current.district;
+        return { ...current, province: value, district: nextDistrict };
+      }
+      if (field === 'newDonor') {
+        return {
+          ...current,
+          newDonor: value,
+          lastBloodDonatedDate: value ? '' : current.lastBloodDonatedDate,
+        };
+      }
+      return { ...current, [field]: value };
+    });
+
+    if (errors[field] || (field === 'newDonor' && errors.lastBloodDonatedDate)) {
+      setErrors((current) => ({
+        ...current,
+        [field]: '',
+        ...(field === 'newDonor' ? { lastBloodDonatedDate: '' } : {}),
+      }));
     }
   }
 
@@ -42,15 +84,42 @@ export default function RegisterDonor({ adminMode = false }) {
     ['name', 'fatherName', 'dateOfBirth', 'bodyWeight', 'email', 'address', 'contactNumber'].forEach((field) => {
       if (!String(form[field] || '').trim()) nextErrors[field] = 'This field is required';
     });
+
+    if (form.dateOfBirth) {
+      const age = calculateAge(form.dateOfBirth);
+      if (age === null || form.dateOfBirth > TODAY_ISO) {
+        nextErrors.dateOfBirth = 'Enter a valid date of birth';
+      } else if (age < 18 || age > 60) {
+        nextErrors.dateOfBirth = 'Donors must be between 18 and 60 years old';
+      }
+    }
+
+    if (form.bodyWeight) {
+      const weight = Number(form.bodyWeight);
+      if (!Number.isFinite(weight) || weight < 50) {
+        nextErrors.bodyWeight = 'Minimum eligible donor weight is 50 kg';
+      }
+    }
+
+    if (!form.newDonor && form.lastBloodDonatedDate && form.lastBloodDonatedDate > TODAY_ISO) {
+      nextErrors.lastBloodDonatedDate = 'Last donation date cannot be in the future';
+    }
+
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       nextErrors.email = 'Enter a valid email address';
     }
-    if (form.bodyWeight && Number(form.bodyWeight) < 45) {
-      nextErrors.bodyWeight = 'Minimum eligible donor weight is typically 50 kg';
+
+    if (form.contactNumber) {
+      const digits = form.contactNumber.replace(/\D/g, '');
+      if (digits.length < 9 || digits.length > 15) {
+        nextErrors.contactNumber = 'Enter a valid phone number (9–15 digits)';
+      }
     }
+
     if (!eligible || !consent) {
       nextErrors.terms = 'Please confirm both eligibility and donor registry consent.';
     }
+
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
@@ -59,12 +128,14 @@ export default function RegisterDonor({ adminMode = false }) {
     try {
       const payload = {
         ...form,
-        lastBloodDonatedDate: form.lastBloodDonatedDate || null,
+        lastBloodDonatedDate: form.newDonor ? null : form.lastBloodDonatedDate || null,
       };
       const result = adminMode ? await api.addDonor(payload) : await api.registerDonor(payload);
       setStatus({
         type: 'success',
-        message: adminMode ? result.message : `${result.message}. Your profile is queued for coordinator review and activation.`,
+        message: adminMode
+          ? result.message
+          : `${result.message}. Your donor profile is queued for hospital coordinator verification.`,
       });
       setForm(empty);
       setEligible(false);
@@ -91,7 +162,7 @@ export default function RegisterDonor({ adminMode = false }) {
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           {adminMode
             ? 'Create a verified donor record for the network. Make sure the donor has agreed to be contacted.'
-            : 'Submit your donor profile for clinical verification. Once approved by a coordinator, hospitals and patients can match with you during blood shortages.'}
+            : 'Submit your donor profile for clinical verification—no separate login password required. Once activated by a hospital coordinator, teams can reach you during urgent blood needs.'}
         </p>
       </div>
 
@@ -124,15 +195,30 @@ export default function RegisterDonor({ adminMode = false }) {
 
           {status.message ? (
             <div
-              className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 text-sm ${
+              className={`rounded-xl border px-4 py-3.5 text-sm ${
                 status.type === 'success'
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
                   : 'border-red-200 bg-red-50 text-red-800'
               }`}
               role="status"
             >
-              {status.type === 'success' ? <CheckCircleIcon className="h-4 w-4 shrink-0" /> : null}
-              <span>{status.message}</span>
+              <div className="flex items-start gap-2.5">
+                {status.type === 'success' ? <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : null}
+                <div>
+                  <p className="font-medium">{status.message}</p>
+                  {status.type === 'success' && !adminMode ? (
+                    <div className="mt-2 flex flex-wrap gap-4 text-xs font-semibold">
+                      <Link to="/search" className="inline-flex items-center gap-1 text-emerald-800 underline underline-offset-2 hover:text-emerald-950">
+                        <span>Browse Active Registry</span>
+                        <ArrowRightIcon className="h-3.5 w-3.5" />
+                      </Link>
+                      <Link to="/" className="text-slate-700 hover:text-slate-900">
+                        Return to Home
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
           ) : null}
 
@@ -145,6 +231,7 @@ export default function RegisterDonor({ adminMode = false }) {
                   value={form.name}
                   onChange={(e) => update('name', e.target.value)}
                   placeholder="e.g., Kavinda Perera"
+                  autoComplete="name"
                 />
               </FormField>
               <FormField label="Father / Guardian Name" required error={errors.fatherName}>
@@ -165,10 +252,11 @@ export default function RegisterDonor({ adminMode = false }) {
                   <option value="female">Female</option>
                 </select>
               </FormField>
-              <FormField label="Date of Birth" required error={errors.dateOfBirth}>
+              <FormField label="Date of Birth" required error={errors.dateOfBirth} hint="Eligible age range: 18–60 years">
                 <input
                   className={inputClass}
                   type="date"
+                  max={TODAY_ISO}
                   value={form.dateOfBirth}
                   onChange={(e) => update('dateOfBirth', e.target.value)}
                 />
@@ -177,7 +265,7 @@ export default function RegisterDonor({ adminMode = false }) {
           </div>
 
           <div className="border-t border-slate-100 pt-6">
-            <h2 className="text-base font-semibold text-slate-900">02. Medical & Blood Profile</h2>
+            <h2 className="text-base font-semibold text-slate-900">02. Medical &amp; Blood Profile</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <BloodGroupPicker
@@ -187,17 +275,18 @@ export default function RegisterDonor({ adminMode = false }) {
                   onChange={(group) => update('bloodGroup', group)}
                 />
               </div>
-              <FormField label="Body Weight (kg)" required error={errors.bodyWeight}>
+              <FormField label="Body Weight (kg)" required error={errors.bodyWeight} hint="Minimum 50 kg required">
                 <input
                   className={inputClass}
                   type="number"
-                  min="40"
+                  min="50"
+                  max="200"
                   value={form.bodyWeight}
                   onChange={(e) => update('bodyWeight', e.target.value)}
                   placeholder="e.g., 65"
                 />
               </FormField>
-              <FormField label="First-Time Donor">
+              <FormField label="Donation Experience">
                 <select
                   className={inputClass}
                   value={form.newDonor ? 'yes' : 'no'}
@@ -207,11 +296,17 @@ export default function RegisterDonor({ adminMode = false }) {
                   <option value="no">No, returning donor</option>
                 </select>
               </FormField>
-              <FormField label="Last Blood Donated Date" hint="Leave blank if first-time donor">
+              <FormField
+                label="Last Blood Donated Date"
+                error={errors.lastBloodDonatedDate}
+                hint={form.newDonor ? 'Not required for first-time donors' : 'Must be at least 4 months ago'}
+              >
                 <input
-                  className={inputClass}
+                  className={`${inputClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
                   type="date"
-                  value={form.lastBloodDonatedDate}
+                  max={TODAY_ISO}
+                  disabled={form.newDonor}
+                  value={form.newDonor ? '' : form.lastBloodDonatedDate}
                   onChange={(e) => update('lastBloodDonatedDate', e.target.value)}
                 />
               </FormField>
@@ -219,7 +314,7 @@ export default function RegisterDonor({ adminMode = false }) {
           </div>
 
           <div className="border-t border-slate-100 pt-6">
-            <h2 className="text-base font-semibold text-slate-900">03. Location & Contact Details</h2>
+            <h2 className="text-base font-semibold text-slate-900">03. Location &amp; Contact Details</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <FormField label="Email Address" required error={errors.email}>
                 <input
@@ -228,14 +323,17 @@ export default function RegisterDonor({ adminMode = false }) {
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   placeholder="donor@example.lk"
+                  autoComplete="email"
                 />
               </FormField>
               <FormField label="Contact Number" required error={errors.contactNumber}>
                 <input
                   className={inputClass}
+                  type="tel"
                   value={form.contactNumber}
                   onChange={(e) => update('contactNumber', e.target.value)}
                   placeholder="077 123 4567"
+                  autoComplete="tel"
                 />
               </FormField>
               <FormField label="Province">
@@ -245,7 +343,9 @@ export default function RegisterDonor({ adminMode = false }) {
                   onChange={(e) => update('province', e.target.value)}
                 >
                   {PROVINCES.map((province) => (
-                    <option key={province}>{province}</option>
+                    <option key={province} value={province}>
+                      {province}
+                    </option>
                   ))}
                 </select>
               </FormField>
@@ -255,8 +355,10 @@ export default function RegisterDonor({ adminMode = false }) {
                   value={form.district}
                   onChange={(e) => update('district', e.target.value)}
                 >
-                  {DISTRICTS.map((district) => (
-                    <option key={district}>{district}</option>
+                  {availableDistricts.map((district) => (
+                    <option key={district} value={district}>
+                      {district}
+                    </option>
                   ))}
                 </select>
               </FormField>
@@ -267,6 +369,7 @@ export default function RegisterDonor({ adminMode = false }) {
                     value={form.address}
                     onChange={(e) => update('address', e.target.value)}
                     placeholder="Street address and locality"
+                    autoComplete="street-address"
                   />
                 </FormField>
               </div>

@@ -17,6 +17,9 @@ async function request(path, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401 && path !== '/api/auth/login' && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    }
     throw new Error(data.message || 'Request failed');
   }
   return data;
@@ -26,6 +29,7 @@ export const api = {
   publicOverview: () => request('/api/public/overview'),
   publicHospitals: () => request('/api/public/hospitals'),
   login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  me: () => request('/api/auth/me'),
   stats: () => request('/api/dashboard/stats'),
   analytics: () => request('/api/dashboard/analytics'),
   notifications: () => request('/api/notifications'),

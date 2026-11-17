@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 
 const AuthContext = createContext(null);
@@ -8,6 +8,46 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [role, setRole] = useState(() => localStorage.getItem('role') || 'ADMIN');
   const [hospitalName, setHospitalName] = useState(() => localStorage.getItem('hospitalName') || '');
+
+  const clearSession = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    localStorage.removeItem('hospitalName');
+    setToken(null);
+    setUser(null);
+    setRole('ADMIN');
+    setHospitalName('');
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => clearSession();
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [clearSession]);
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    api
+      .me()
+      .then((data) => {
+        if (!active || !data?.username) return;
+        localStorage.setItem('username', data.username);
+        localStorage.setItem('role', data.role || 'ADMIN');
+        if (data.hospitalName) localStorage.setItem('hospitalName', data.hospitalName);
+        else localStorage.removeItem('hospitalName');
+        setUser(data.username);
+        setRole(data.role || 'ADMIN');
+        setHospitalName(data.hospitalName || '');
+      })
+      .catch(() => {
+        if (active) clearSession();
+      });
+    return () => {
+      active = false;
+    };
+  }, [token, clearSession]);
 
   const value = useMemo(
     () => ({
@@ -29,18 +69,9 @@ export function AuthProvider({ children }) {
         setRole(data.role);
         setHospitalName(data.hospitalName || '');
       },
-      logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        localStorage.removeItem('role');
-        localStorage.removeItem('hospitalName');
-        setToken(null);
-        setUser(null);
-        setRole('ADMIN');
-        setHospitalName('');
-      },
+      logout: clearSession,
     }),
-    [user, token, role, hospitalName]
+    [user, token, role, hospitalName, clearSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

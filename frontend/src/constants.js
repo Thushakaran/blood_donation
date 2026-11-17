@@ -21,8 +21,21 @@ export const PROVINCES = [
   'Central',
   'Sabaragamuwa',
   'Eastern',
+  'Uva',
   'Southern',
 ];
+
+export const PROVINCE_DISTRICTS = {
+  Northern: ['Jaffna', 'Kilinochchi', 'Mannar', 'Mullaitivu', 'Vavuniya'],
+  NorthWestern: ['Puttalam', 'Kurunegala'],
+  Western: ['Colombo', 'Gampaha', 'Kalutara'],
+  NorthCentral: ['Anuradhapura', 'Polonnaruwa'],
+  Central: ['Kandy', 'Matale', 'Nuwara Eliya'],
+  Sabaragamuwa: ['Kegalle', 'Ratnapura'],
+  Eastern: ['Trincomalee', 'Batticaloa', 'Ampara'],
+  Uva: ['Badulla', 'Monaragala'],
+  Southern: ['Galle', 'Matara', 'Hambantota'],
+};
 
 export const DISTRICTS = [
   'Jaffna',

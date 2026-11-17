@@ -52,7 +52,7 @@ export default function Navbar() {
             to={isAdmin ? '/dashboard' : '/login'}
             className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 sm:inline-flex lg:px-4"
           >
-            {isAdmin ? 'Dashboard' : 'Sign In'}
+            {isAdmin ? 'Dashboard' : 'Staff Portal'}
           </Link>
           <Link
             to="/register"
@@ -95,7 +95,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              {isAdmin ? 'Dashboard' : 'Sign In'}
+              {isAdmin ? 'Dashboard' : 'Staff Portal'}
             </Link>
             <Link
               to="/register"
