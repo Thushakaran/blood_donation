@@ -80,7 +80,7 @@ export default function Dashboard() {
   const maxStock = Math.max(1, ...stockByGroup.map((g) => g.units));
   const monthly = analytics?.monthlyDonations || [];
   const maxMonthly = Math.max(1, ...monthly.map((m) => Math.max(m.donations, m.requests)));
-  const notifications = analytics?.notifications || [];
+  const notifications = (analytics?.notifications || []).filter((note) => note.active);
   const activities = analytics?.recentActivities || [];
   const donationHistory = analytics?.donationHistory || [];
 
@@ -215,7 +215,7 @@ export default function Dashboard() {
               <h2 className="text-base font-semibold text-slate-900">
                 Donations vs. Requests (6 Months)
               </h2>
-              <p className="mt-0.5 text-xs text-slate-500">Monthly units collected and matched</p>
+              <p className="mt-0.5 text-xs text-slate-500">Monthly donation and request totals</p>
             </div>
           </div>
 
@@ -230,29 +230,27 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div className="mt-6 flex h-44 items-end justify-between gap-3 border-b border-slate-100 pb-2">
-            {monthly.map((item) => {
-              const donH = Math.round((item.donations / maxMonthly) * 140);
-              const reqH = Math.round((item.requests / maxMonthly) * 140);
-              return (
-                <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
-                  <div className="flex items-end gap-1">
-                    <div
-                      className="w-3.5 rounded-t bg-red-600 transition-all"
-                      style={{ height: `${donH}px` }}
-                      title={`${item.donations} donations`}
-                    />
-                    <div
-                      className="w-3.5 rounded-t bg-slate-300 transition-all"
-                      style={{ height: `${reqH}px` }}
-                      title={`${item.requests} requests`}
-                    />
+          {monthly.length === 0 ? (
+            <p className="mt-6 flex h-44 items-center justify-center border-b border-slate-100 text-center text-sm text-slate-500">
+              Monthly totals will appear when dated donation and request history is available.
+            </p>
+          ) : (
+            <div className="mt-6 flex h-44 items-end justify-between gap-3 border-b border-slate-100 pb-2">
+              {monthly.map((item) => {
+                const donH = Math.round((item.donations / maxMonthly) * 140);
+                const reqH = Math.round((item.requests / maxMonthly) * 140);
+                return (
+                  <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
+                    <div className="flex items-end gap-1">
+                      <div className="w-3.5 rounded-t bg-red-600 transition-all" style={{ height: `${donH}px` }} title={`${item.donations} donations`} />
+                      <div className="w-3.5 rounded-t bg-slate-300 transition-all" style={{ height: `${reqH}px` }} title={`${item.requests} requests`} />
+                    </div>
+                    <span className="font-mono text-xs text-slate-500">{item.month}</span>
                   </div>
-                  <span className="font-mono text-xs text-slate-500">{item.month}</span>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
 
@@ -355,8 +353,9 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-12">
         <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-6">
           <h2 className="text-base font-semibold text-slate-900">Recent Activities</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Audit trail across donor approvals, requests, and stock</p>
+          <p className="mt-0.5 text-xs text-slate-500">Recent blood inventory adjustments {isSuperAdmin ? 'across hospitals' : `at ${hospitalName || 'your hospital'}`}</p>
           <ul className="mt-4 divide-y divide-slate-100">
+            {activities.length === 0 && <li className="py-8 text-center text-sm text-slate-500">No inventory adjustments have been recorded yet.</li>}
             {activities.slice(0, 5).map((act) => (
               <li key={act.id} className="py-3">
                 <div className="flex items-start justify-between gap-3">
@@ -373,11 +372,12 @@ export default function Dashboard() {
           </ul>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-6">
+        {isSuperAdmin && (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">Recent Donation History</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Latest recorded whole-blood donations from active donors</p>
+              <h2 className="text-base font-semibold text-slate-900">Last Recorded Donation Dates</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Most recent donation dates saved on active donor profiles</p>
             </div>
             <Link to="/dashboard/active-donors" className="text-xs font-semibold text-red-600 hover:text-red-700">
               All donors →
@@ -402,10 +402,12 @@ export default function Dashboard() {
                     <td className="py-2.5 text-right font-mono text-xs text-slate-600 tabular-nums">{d.date}</td>
                   </tr>
                 ))}
+                {donationHistory.length === 0 && <tr><td colSpan="4" className="py-8 text-center text-sm text-slate-500">No donor donation dates have been recorded.</td></tr>}
               </tbody>
             </table>
           </div>
-        </section>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import com.bloodshare.repository.InboxMessageRepository;
 import com.bloodshare.repository.BloodStockRepository;
 import com.bloodshare.service.BloodStockTotals;
 import com.bloodshare.security.CurrentAdmin;
+import com.bloodshare.service.NotificationService;
+import com.bloodshare.repository.StockAdjustmentRepository;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,18 +23,23 @@ public class DashboardController {
     private final BloodRequestRepository bloodRequestRepository;
     private final BloodStockRepository bloodStockRepository;
     private final CurrentAdmin currentAdmin;
+    private final NotificationService notificationService;
+    private final StockAdjustmentRepository adjustmentRepository;
 
     public DashboardController(
             DonorRepository donorRepository,
             InboxMessageRepository inboxMessageRepository,
             BloodRequestRepository bloodRequestRepository, BloodStockRepository bloodStockRepository,
-            CurrentAdmin currentAdmin
+            CurrentAdmin currentAdmin, NotificationService notificationService,
+            StockAdjustmentRepository adjustmentRepository
     ) {
         this.donorRepository = donorRepository;
         this.inboxMessageRepository = inboxMessageRepository;
         this.bloodRequestRepository = bloodRequestRepository;
         this.bloodStockRepository = bloodStockRepository;
         this.currentAdmin = currentAdmin;
+        this.notificationService = notificationService;
+        this.adjustmentRepository = adjustmentRepository;
     }
 
     @GetMapping("/stats")
@@ -53,28 +60,22 @@ public class DashboardController {
         var stockRows = "SUPERADMIN".equals(admin.getRole()) ? bloodStockRepository.findAll() : bloodStockRepository.findByHospitalName(admin.getHospitalName()).stream().toList();
         List<Map<String, Object>> byGroup = BloodStockTotals.byGroup(stockRows);
         long totalUnits = BloodStockTotals.total(byGroup);
-        List<Map<String, Object>> notifications = new java.util.ArrayList<>();
-        byGroup.stream().filter(group -> !"Optimal".equals(group.get("status"))).forEach(group -> notifications.add(Map.of(
-                "id", "stock-" + group.get("bloodGroup"),
-                "title", group.get("bloodGroup") + " blood stock " + group.get("status"),
-                "detail", group.get("units") + ("SUPERADMIN".equals(admin.getRole()) ? " units available across the network" : " units available at " + admin.getHospitalName()),
-                "severity", "Critical".equals(group.get("status")) ? "critical" : "warning",
-                "to", "/dashboard/stock")));
-        var requests = "SUPERADMIN".equals(admin.getRole()) ? bloodRequestRepository.findAll() : bloodRequestRepository.findByHospitalAddress(admin.getHospitalName());
-        requests.stream()
-                .filter(request -> "urgent".equalsIgnoreCase(request.getUrgency()) && !"Fulfilled".equals(request.getStatus()))
-                .limit(5).forEach(request -> notifications.add(Map.of(
-                        "id", "request-" + request.getId(), "title", "Urgent blood request",
-                        "detail", request.getBloodGroupType() + " needed at " + request.getHospitalAddress(),
-                        "severity", "critical", "to", "/dashboard/requests/" + request.getId())));
-        long pendingDonors = "SUPERADMIN".equals(admin.getRole()) ? donorRepository.countByActiveFalse() : 0;
-        if (pendingDonors > 0) notifications.add(Map.of(
-                "id", "pending-donors", "title", "Donors awaiting verification",
-                "detail", pendingDonors + " registration(s) need review", "severity", "warning",
-                "to", "/dashboard/inactive-donors"));
-
+        var adjustments = "SUPERADMIN".equals(admin.getRole())
+                ? adjustmentRepository.findTop100ByOrderByTimestampDesc()
+                : adjustmentRepository.findTop100ByHospitalNameOrderByTimestampDesc(admin.getHospitalName());
+        var activities = adjustments.stream().map(item -> Map.<String, Object>of(
+                "id", item.getId(), "title", "Blood stock " + item.getAction(),
+                "detail", item.getUnits() + " units of " + item.getBloodGroup() + " at " + item.getHospitalName(),
+                "timestamp", item.getTimestamp().toString())).toList();
+        var donationHistory = "SUPERADMIN".equals(admin.getRole())
+                ? donorRepository.findByActiveTrue().stream().filter(donor -> donor.getLastBloodDonatedDate() != null)
+                    .sorted((a, b) -> b.getLastBloodDonatedDate().compareTo(a.getLastBloodDonatedDate()))
+                    .limit(20).map(donor -> Map.<String, Object>of("id", donor.getId(), "donorName", donor.getName(),
+                            "bloodGroup", java.util.Objects.toString(donor.getBloodGroup(), ""), "district", java.util.Objects.toString(donor.getDistrict(), ""),
+                            "date", donor.getLastBloodDonatedDate().toString())).toList()
+                : List.of();
         return Map.of("stockByGroup", byGroup, "totalUnits", totalUnits,
-                "monthlyDonations", List.of(), "notifications", notifications,
-                "recentActivities", List.of(), "donationHistory", List.of(), "stockHistory", List.of());
+                "monthlyDonations", List.of(), "notifications", notificationService.refreshAndList(admin),
+                "recentActivities", activities, "donationHistory", donationHistory, "stockHistory", adjustments);
     }
 }

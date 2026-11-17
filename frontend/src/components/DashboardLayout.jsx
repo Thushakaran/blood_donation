@@ -69,21 +69,39 @@ export default function DashboardLayout() {
   const [notifications, setNotifications] = useState([]);
   const [avatarFailed, setAvatarFailed] = useState(false);
 
+  async function refreshNotifications() {
+    const rows = await api.notifications();
+    setNotifications(rows);
+  }
+
+  async function markNotificationSeen(id) {
+    try {
+      const updated = await api.markNotificationSeen(id);
+      setNotifications((rows) => rows.map((row) => row.id === id ? updated : row));
+    } catch {
+      refreshNotifications().catch(() => {});
+    }
+  }
+
+  async function markAllNotificationsSeen() {
+    try {
+      await api.markAllNotificationsSeen();
+      setNotifications((rows) => rows.map((row) => ({ ...row, seen: true, seenAt: row.seenAt || new Date().toISOString() })));
+    } catch {
+      refreshNotifications().catch(() => {});
+    }
+  }
+
   useEffect(() => {
     if (!isAdmin) return;
     let active = true;
-    api
-      .analytics()
-      .then((data) => {
-        if (active && Array.isArray(data?.notifications)) {
-          setNotifications(data.notifications);
-        }
-      })
-      .catch(() => {});
+    api.notifications().then((rows) => { if (active) setNotifications(rows); }).catch(() => {});
     return () => {
       active = false;
     };
   }, [isAdmin, location.pathname]);
+
+  const unseenCount = notifications.filter((note) => note.active && !note.seen).length;
 
   if (!isAdmin) {
     return <Navigate to="/admin" replace />;
@@ -236,16 +254,20 @@ export default function DashboardLayout() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setNotifOpen((prev) => !prev)}
+                onClick={() => {
+                  const opening = !notifOpen;
+                  setNotifOpen(opening);
+                  if (opening) refreshNotifications().catch(() => {});
+                }}
                 className="relative inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
                 aria-label="View clinical notifications"
                 aria-expanded={notifOpen}
               >
                 <BellIcon className="h-4 w-4 text-slate-600" />
                 <span className="hidden sm:inline">Alerts</span>
-                {notifications.length > 0 ? (
+                {unseenCount > 0 ? (
                   <span className="font-mono text-xs font-semibold text-red-600 tabular-nums">
-                    {notifications.length}
+                    {unseenCount}
                   </span>
                 ) : null}
               </button>
@@ -253,36 +275,35 @@ export default function DashboardLayout() {
               {notifOpen ? (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:w-96">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <p className="text-sm font-semibold text-slate-900">Clinical Alerts</p>
-                    <button
-                      type="button"
-                      onClick={() => setNotifOpen(false)}
-                      className="text-xs text-slate-500 hover:text-slate-900"
-                    >
-                      Close
-                    </button>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Notification Log</p>
+                      <p className="text-[11px] text-slate-500">{unseenCount} unseen</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {unseenCount > 0 && <button type="button" onClick={markAllNotificationsSeen} className="text-xs font-medium text-red-600 hover:text-red-700">Mark all seen</button>}
+                      <button type="button" onClick={() => setNotifOpen(false)} className="text-xs text-slate-500 hover:text-slate-900">Close</button>
+                    </div>
                   </div>
                   <div className="mt-2 max-h-80 space-y-1.5 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <p className="py-6 text-center text-sm text-slate-500">All hospital inventories and queues are nominal.</p>
                     ) : (
                       notifications.map((note) => (
-                        <Link
-                          key={note.id}
-                          to={note.to}
-                          onClick={() => setNotifOpen(false)}
-                          className="flex items-start gap-2.5 rounded-lg p-2.5 transition-colors hover:bg-slate-50"
-                        >
-                          <AlertTriangleIcon
-                            className={`mt-0.5 h-4 w-4 shrink-0 ${
-                              note.severity === 'critical' ? 'text-red-600' : 'text-amber-600'
-                            }`}
-                          />
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-slate-900">{note.title}</p>
-                            <p className="mt-0.5 text-xs text-slate-500">{note.detail}</p>
+                        <div key={note.id} className={`flex items-start gap-2.5 rounded-lg p-2.5 ${note.seen ? 'bg-slate-50 opacity-75' : 'bg-red-50/50'}`}>
+                          <AlertTriangleIcon className={`mt-0.5 h-4 w-4 shrink-0 ${note.severity === 'critical' ? 'text-red-600' : 'text-amber-600'}`} />
+                          <div className="min-w-0 flex-1">
+                            <Link to={note.to} onClick={() => { if (!note.seen) markNotificationSeen(note.id); setNotifOpen(false); }} className="block">
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-semibold text-slate-900">{note.title}</p>
+                                <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${note.seen ? 'bg-slate-200 text-slate-600' : 'bg-red-100 text-red-700'}`}>{note.seen ? 'Seen' : 'Unseen'}</span>
+                                {!note.active && <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Resolved</span>}
+                              </div>
+                              <p className="mt-0.5 text-xs text-slate-500">{note.detail}</p>
+                              <p className="mt-1 text-[10px] text-slate-400">{note.createdAt ? new Date(note.createdAt).toLocaleString() : ''}</p>
+                            </Link>
+                            {!note.seen && <button type="button" onClick={() => markNotificationSeen(note.id)} className="mt-1 text-[11px] font-medium text-red-600 hover:underline">Mark seen</button>}
                           </div>
-                        </Link>
+                        </div>
                       ))
                     )}
                   </div>
