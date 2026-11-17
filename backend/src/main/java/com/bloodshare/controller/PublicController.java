@@ -29,6 +29,7 @@ public class PublicController {
         var stockByGroup = BloodStockTotals.byGroup(allStocks);
         long units = BloodStockTotals.total(stockByGroup);
         var hospitalNames = allStocks.stream().map(row -> row.getHospitalName()).sorted().toList();
+        var hospitalStocks = toPublicStocks(allStocks);
         var allRequests = requests.findAll();
         var recent = allRequests.stream()
                 .filter(r -> !"Fulfilled".equalsIgnoreCase(r.getStatus()))
@@ -41,7 +42,17 @@ public class PublicController {
                         r.getHospitalAddress(), r.getReason(), r.getRequiredDate(), r.getUrgency(), r.getStatus()))
                 .toList();
         long fulfilled = allRequests.stream().filter(r -> "Fulfilled".equalsIgnoreCase(r.getStatus())).count();
-        return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "stockByGroup", stockByGroup, "hospitals", hospitalNames, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
+        return Map.of(
+                "totalDonors", donors.count(),
+                "activeDonors", donors.countByActiveTrue(),
+                "availableUnits", units,
+                "stockByGroup", stockByGroup,
+                "hospitals", hospitalNames,
+                "hospitalStocks", hospitalStocks,
+                "successfulDonations", 0L,
+                "requestsFulfilled", fulfilled,
+                "recentRequests", recent
+        );
     }
 
     private static int urgencyRank(String urgency) {
@@ -51,11 +62,41 @@ public class PublicController {
         return 2;
     }
 
+    private static List<PublicHospitalStock> toPublicStocks(List<com.bloodshare.entity.BloodStock> rows) {
+        return rows.stream()
+                .sorted(Comparator.comparing(com.bloodshare.entity.BloodStock::getHospitalName, String.CASE_INSENSITIVE_ORDER))
+                .map(s -> {
+                    int total = s.getOPositive() + s.getONegative()
+                            + s.getAPositive() + s.getANegative()
+                            + s.getBPositive() + s.getBNegative()
+                            + s.getAbPositive() + s.getAbNegative();
+                    return new PublicHospitalStock(
+                            s.getId(), s.getHospitalName(), s.getAddress(), s.getContactNumber(),
+                            s.getOPositive(), s.getONegative(),
+                            s.getAPositive(), s.getANegative(),
+                            s.getBPositive(), s.getBNegative(),
+                            s.getAbPositive(), s.getAbNegative(),
+                            total
+                    );
+                })
+                .toList();
+    }
+
     public record PublicRequest(Long id, String bloodGroupType, String units, String hospitalAddress,
                                 String reason, LocalDate requiredDate, String urgency, String status) {}
+
+    public record PublicHospitalStock(Long id, String hospitalName, String address, String contactNumber,
+                                      int oPositive, int oNegative, int aPositive, int aNegative,
+                                      int bPositive, int bNegative, int abPositive, int abNegative,
+                                      int totalUnits) {}
 
     @GetMapping("/hospitals")
     public List<String> hospitals() {
         return stock.findAll().stream().map(row -> row.getHospitalName()).sorted().toList();
+    }
+
+    @GetMapping("/stock")
+    public List<PublicHospitalStock> publicStock() {
+        return toPublicStocks(stock.findAll());
     }
 }

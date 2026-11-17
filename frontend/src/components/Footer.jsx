@@ -33,6 +33,9 @@ export default function Footer() {
                 <Link to="/search" className="text-slate-300 transition-colors hover:text-white">Search Donors</Link>
               </li>
               <li>
+                <Link to="/hospitals" className="text-slate-300 transition-colors hover:text-white">Hospitals &amp; Blood Stock</Link>
+              </li>
+              <li>
                 <Link to="/about" className="text-slate-300 transition-colors hover:text-white">About Network</Link>
               </li>
               <li>

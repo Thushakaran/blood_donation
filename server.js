@@ -597,6 +597,23 @@ function computeStockByGroup() {
   }));
 }
 
+function formatPublicHospitalStocks() {
+  return [...bloodStocks]
+    .sort((a, b) => a.hospitalName.localeCompare(b.hospitalName))
+    .map((s) => ({
+      ...s,
+      totalUnits:
+        s.oPositive +
+        s.oNegative +
+        s.aPositive +
+        s.aNegative +
+        s.bPositive +
+        s.bNegative +
+        s.abPositive +
+        s.abNegative,
+    }));
+}
+
 const app = express();
 app.use(express.json());
 
@@ -632,6 +649,8 @@ app.get('/api/public/overview', (_req, res) => {
       reason: r.reason,
     }));
 
+  const hospitalStocks = formatPublicHospitalStocks();
+
   return res.json({
     totalDonors: donors.length,
     activeDonors: donors.filter((d) => d.active).length,
@@ -639,7 +658,8 @@ app.get('/api/public/overview', (_req, res) => {
     successfulDonations: successfulDonationsBaseline + donors.filter((d) => d.active).length,
     requestsFulfilled: fulfilledRequestsOffset + fulfilledCount,
     stockByGroup,
-    hospitals: bloodStocks.map((s) => s.hospitalName).sort(),
+    hospitals: hospitalStocks.map((s) => s.hospitalName),
+    hospitalStocks,
     recentRequests,
   });
 });
@@ -647,6 +667,11 @@ app.get('/api/public/overview', (_req, res) => {
 // Public hospitals list (dynamic from active blood bank network)
 app.get('/api/public/hospitals', (_req, res) => {
   return res.json(bloodStocks.map((s) => s.hospitalName).sort());
+});
+
+// Public hospital blood unit availability for donors and patients
+app.get('/api/public/stock', (_req, res) => {
+  return res.json(formatPublicHospitalStocks());
 });
 
 // Admin Hospital Management endpoints

@@ -28,6 +28,7 @@ async function request(path, options = {}) {
 export const api = {
   publicOverview: () => request('/api/public/overview'),
   publicHospitals: () => request('/api/public/hospitals'),
+  publicStock: () => request('/api/public/stock'),
   login: (body) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   me: () => request('/api/auth/me'),
   stats: () => request('/api/dashboard/stats'),

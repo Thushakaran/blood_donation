@@ -10,6 +10,7 @@ import AdminLogin from './pages/AdminLogin';
 import RegisterDonor from './pages/RegisterDonor';
 import NeedBlood from './pages/NeedBlood';
 import SearchDonors from './pages/SearchDonors';
+import PublicHospitals from './pages/PublicHospitals';
 import Dashboard from './pages/Dashboard';
 import Inbox from './pages/Inbox';
 import ActiveDonors from './pages/ActiveDonors';
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/register" element={<RegisterDonor />} />
             <Route path="/need-blood" element={<NeedBlood />} />
             <Route path="/search" element={<SearchDonors />} />
+            <Route path="/hospitals" element={<PublicHospitals />} />
           </Route>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />

@@ -7,20 +7,33 @@ import { BuildingIcon, CheckCircleIcon, HeartPulseIcon, ShieldCheckIcon } from '
 
 export default function About() {
   const [hospitals, setHospitals] = useState(HOSPITALS);
+  const [stockMap, setStockMap] = useState(new Map());
   const [labImgFailed, setLabImgFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
-    api
-      .publicHospitals()
-      .then((rows) => {
-        if (!active || !Array.isArray(rows) || !rows.length) return;
-        const normalized = rows
-          .map((item) => (typeof item === 'string' ? item : item?.hospitalName))
-          .filter(Boolean);
-        if (normalized.length) setHospitals(normalized);
-      })
-      .catch(() => {});
+    Promise.all([
+      api.publicHospitals().catch(() => []),
+      api.publicStock().catch(() => []),
+    ])
+      .then(([rows, stockRows]) => {
+        if (!active) return;
+        if (Array.isArray(stockRows) && stockRows.length) {
+          const nextMap = new Map();
+          stockRows.forEach((s) => {
+            if (s?.hospitalName) nextMap.set(s.hospitalName, Number(s.totalUnits || 0));
+          });
+          setStockMap(nextMap);
+          setHospitals(stockRows.map((s) => s.hospitalName).filter(Boolean));
+          return;
+        }
+        if (Array.isArray(rows) && rows.length) {
+          const normalized = rows
+            .map((item) => (typeof item === 'string' ? item : item?.hospitalName))
+            .filter(Boolean);
+          if (normalized.length) setHospitals(normalized);
+        }
+      });
     return () => {
       active = false;
     };
@@ -108,24 +121,41 @@ export default function About() {
       </div>
 
       <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Connected Partner Hospitals</h2>
             <p className="mt-1 text-sm text-slate-600">
               {hospitals.length} regional and teaching hospitals sharing unified blood inventory visibility.
             </p>
           </div>
+          <Link
+            to="/hospitals"
+            className="text-sm font-semibold text-red-600 hover:text-red-700"
+          >
+            View blood units by group →
+          </Link>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {hospitals.map((hospital) => (
-            <div
-              key={hospital}
-              className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 transition-colors hover:border-slate-300 hover:bg-white"
-            >
-              <BuildingIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
-              <span className="text-xs font-medium leading-snug text-slate-800">{hospital}</span>
-            </div>
-          ))}
+          {hospitals.map((hospital) => {
+            const units = stockMap.get(hospital);
+            return (
+              <Link
+                key={hospital}
+                to="/hospitals"
+                className="flex flex-col justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 transition-colors hover:border-red-200 hover:bg-white"
+              >
+                <div className="flex items-start gap-2.5">
+                  <BuildingIcon className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+                  <span className="text-xs font-medium leading-snug text-slate-800">{hospital}</span>
+                </div>
+                {typeof units === 'number' ? (
+                  <p className="font-mono text-[11px] font-semibold text-slate-600 tabular-nums">
+                    {units} units available
+                  </p>
+                ) : null}
+              </Link>
+            );
+          })}
         </div>
       </section>
     </div>

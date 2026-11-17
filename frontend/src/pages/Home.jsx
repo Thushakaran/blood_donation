@@ -118,6 +118,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [liveHospitals, setLiveHospitals] = useState([]);
+  const [hospitalStocks, setHospitalStocks] = useState([]);
   const [searchBloodGroup, setSearchBloodGroup] = useState("All");
   const [searchDistrict, setSearchDistrict] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -151,10 +152,18 @@ export default function Home() {
     Promise.all([
       api.publicOverview().catch(() => null),
       api.publicHospitals().catch(() => []),
+      api.publicStock().catch(() => []),
     ])
-      .then(([overviewData, hospitalsData]) => {
+      .then(([overviewData, hospitalsData, stockData]) => {
         if (!active) return;
         if (overviewData) setOverview(overviewData);
+        const stocksList = overviewData?.hospitalStocks?.length
+          ? overviewData.hospitalStocks
+          : Array.isArray(stockData)
+            ? stockData
+            : [];
+        if (stocksList.length) setHospitalStocks(stocksList);
+
         const rawList = overviewData?.hospitals?.length
           ? overviewData.hospitals
           : hospitalsData;
@@ -174,6 +183,13 @@ export default function Home() {
   }, []);
 
   const hospitalNames = liveHospitals.length ? liveHospitals : HOSPITALS;
+  const hospitalUnitMap = useMemo(() => {
+    const map = new Map();
+    hospitalStocks.forEach((item) => {
+      if (item?.hospitalName) map.set(item.hospitalName, Number(item.totalUnits || 0));
+    });
+    return map;
+  }, [hospitalStocks]);
 
   const stats = [
     {
@@ -552,10 +568,19 @@ export default function Home() {
             </p>
           )}
 
-          <p className="mt-4 text-xs text-slate-600">
-            Combined unit totals from participating hospital blood banks. Click any blood
-            group to search matching active donors.
-          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+            <p>
+              Combined unit totals from participating hospital blood banks. Click any blood
+              group to search matching active donors.
+            </p>
+            <Link
+              to="/hospitals"
+              className="inline-flex items-center gap-1 whitespace-nowrap font-semibold text-red-600 hover:text-red-700"
+            >
+              <span>View stock by hospital</span>
+              <ArrowRightIcon className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -1048,30 +1073,42 @@ export default function Home() {
               </p>
 
               <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-                {hospitalNames.map((hospital) => (
-                  <li
-                    key={hospital}
-                    className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800"
-                  >
-                    <BuildingIcon className="h-4 w-4 shrink-0 text-red-600" />
-                    <span className="truncate">{hospital}</span>
-                  </li>
-                ))}
+                {hospitalNames.map((hospital) => {
+                  const units = hospitalUnitMap.get(hospital);
+                  return (
+                    <li key={hospital}>
+                      <Link
+                        to="/hospitals"
+                        className="flex items-center justify-between gap-2.5 rounded-lg border border-slate-200 bg-slate-50/70 px-3.5 py-2.5 text-sm font-medium text-slate-800 transition-colors hover:border-red-200 hover:bg-white"
+                      >
+                        <span className="flex min-w-0 items-center gap-2.5">
+                          <BuildingIcon className="h-4 w-4 shrink-0 text-red-600" />
+                          <span className="truncate">{hospital}</span>
+                        </span>
+                        {typeof units === "number" ? (
+                          <span className="shrink-0 font-mono text-xs font-semibold text-slate-600 tabular-nums">
+                            {units} units
+                          </span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
 
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link
-                  to="/register"
+                  to="/hospitals"
                   className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
                 >
-                  <span>Become a Registered Donor</span>
+                  <span>View Stock by Hospital</span>
                   <ArrowRightIcon className="h-4 w-4" />
                 </Link>
                 <Link
-                  to="/about"
-                  className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-slate-400 hover:bg-slate-50"
+                  to="/register"
+                  className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
                 >
-                  Explore Platform Standards
+                  Become a Registered Donor
                 </Link>
               </div>
             </div>

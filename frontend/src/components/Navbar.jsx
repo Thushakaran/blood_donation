@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/search', label: 'Find Donors' },
+  { to: '/hospitals', label: 'Blood Stock' },
   { to: '/need-blood', label: 'Request Blood' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
