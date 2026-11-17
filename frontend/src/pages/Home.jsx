@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '../api';
-import { BLOOD_COMPATIBILITY } from '../constants';
-import heroClinicImg from '../assets/images/hero_blood_clinic_1794828546655.jpg';
-import StatusBadge from '../components/StatusBadge';
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { api } from "../api";
+import { BLOOD_COMPATIBILITY } from "../constants";
+import heroClinicImg from "../assets/images/hero_blood_clinic_1794828546655.jpg";
+import eligibilityVideo from "../assets/eligibility.mp4";
+import StatusBadge from "../components/StatusBadge";
 import {
   ArrowRightIcon,
   BuildingIcon,
@@ -12,75 +13,74 @@ import {
   DropletFillIcon,
   HeartPulseIcon,
   ShieldCheckIcon,
-} from '../components/Icons';
+} from "../components/Icons";
 
-const GUIDE_VIDEO_SRC =
-  '/assets/aistudio/AQPxr0iXmTUL5R_uwzYNuw2rYcK70DRl0nS3o2cBu0QBmjyDVNweglBSNhLBDzhIGBxWxzAfyEMPtFod9Ie7cyhOfedsTgrhSDOvCXutHwPcpA_f7eae55d.mp4';
+const GUIDE_VIDEO_SRC = eligibilityVideo;
 
 const HOW_IT_WORKS = [
   {
-    step: '01',
-    title: 'Register & Screen',
+    step: "01",
+    title: "Register & Screen",
     description:
-      'Complete a 2-minute donor profile with your blood group, district, and medical eligibility confirmation.',
+      "Complete a 2-minute donor profile with your blood group, district, and medical eligibility confirmation.",
   },
   {
-    step: '02',
-    title: 'Clinical Verification',
+    step: "02",
+    title: "Clinical Verification",
     description:
-      'Hospital coordinators verify donor readiness and activate your profile for regional emergency matching.',
+      "Hospital coordinators verify donor readiness and activate your profile for regional emergency matching.",
   },
   {
-    step: '03',
-    title: 'Donate & Save Lives',
+    step: "03",
+    title: "Donate & Save Lives",
     description:
-      'Respond to urgent hospital blood requests or donate at any of our 10 connected medical centers.',
+      "Respond to urgent hospital blood requests or donate at any of our 10 connected medical centers.",
   },
 ];
 
 const WHY_DONATE = [
   {
-    title: 'Three Lives From One Donation',
+    title: "Three Lives From One Donation",
     description:
-      'Every 450 ml whole blood donation is separated into red blood cells, plasma, and platelets for surgical, trauma, and oncology patients.',
+      "Every 450 ml whole blood donation is separated into red blood cells, plasma, and platelets for surgical, trauma, and oncology patients.",
   },
   {
-    title: 'Continuous Hospital Readiness',
+    title: "Continuous Hospital Readiness",
     description:
-      'Red cells have a 42-day shelf life and platelets last just 5 days, requiring steady daily replenishment across regional blood banks.',
+      "Red cells have a 42-day shelf life and platelets last just 5 days, requiring steady daily replenishment across regional blood banks.",
   },
   {
-    title: 'Complimentary Health Screening',
+    title: "Complimentary Health Screening",
     description:
-      'Each visit includes hemoglobin, blood pressure, pulse, and infectious-disease screening performed by certified hospital staff.',
+      "Each visit includes hemoglobin, blood pressure, pulse, and infectious-disease screening performed by certified hospital staff.",
   },
 ];
 
 const ELIGIBILITY_RULES = [
-  'Aged between 18 and 60 years old with valid national identification',
-  'Minimum body weight of 50 kg and in good general health on donation day',
-  'At least 4 months (120 days) since your previous whole blood donation',
-  'Normal hemoglobin level and no active fever, infection, or recent major surgery',
+  "Aged between 18 and 60 years old with valid national identification",
+  "Minimum body weight of 50 kg and in good general health on donation day",
+  "At least 4 months (120 days) since your previous whole blood donation",
+  "Normal hemoglobin level and no active fever, infection, or recent major surgery",
 ];
 
 const TESTIMONIALS = [
   {
     quote:
-      'When our surgical ward faced a critical O- shortage before midnight, Blood Share matched two verified donors within 25 minutes.',
-    name: 'Dr. K. Senanayake',
-    role: 'Consultant Trauma Surgeon, National Hospital of Sri Lanka',
+      "When our surgical ward faced a critical O- shortage before midnight, Blood Share matched two verified donors within 25 minutes.",
+    name: "Dr. K. Senanayake",
+    role: "Consultant Trauma Surgeon, National Hospital of Sri Lanka",
   },
   {
     quote:
-      'Having clear donor intervals and hospital contact details makes regular donation effortless. I have donated four times through the Jaffna center.',
-    name: 'Nirosha Sivalingam',
-    role: 'Registered A+ Donor, Jaffna',
+      "Having clear donor intervals and hospital contact details makes regular donation effortless. I have donated four times through the Jaffna center.",
+    name: "Nirosha Sivalingam",
+    role: "Registered A+ Donor, Jaffna",
   },
   {
     quote:
-      'Centralizing blood stock levels across all 10 partner hospitals reduced emergency inter-hospital transfer delays significantly.',
-    name: 'Dr. P. Mahendran',
-    role: 'Hematology Unit Lead, Jaffna Teaching Hospital',
+      "Centralizing blood stock levels across all 10 partner hospitals reduced emergency inter-hospital transfer delays significantly.",
+    name: "Dr. P. Mahendran",
+    role: "Hematology Unit Lead, Jaffna Teaching Hospital",
   },
 ];
 
@@ -89,8 +89,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [heroImgFailed, setHeroImgFailed] = useState(false);
   const [bgPlaying, setBgPlaying] = useState(() => {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     }
     return true;
   });
@@ -127,24 +127,26 @@ export default function Home() {
 
   const stats = [
     {
-      label: 'Total Registered Donors',
-      value: overview ? overview.totalDonors : '—',
-      context: overview ? `${overview.activeDonors} verified active` : 'Across 8 provinces',
+      label: "Total Registered Donors",
+      value: overview ? overview.totalDonors : "—",
+      context: overview
+        ? `${overview.activeDonors} verified active`
+        : "Across 8 provinces",
     },
     {
-      label: 'Available Blood Units',
-      value: overview ? overview.availableUnits : '—',
-      context: 'Across 10 partner hospitals',
+      label: "Available Blood Units",
+      value: overview ? overview.availableUnits : "—",
+      context: "Across 10 partner hospitals",
     },
     {
-      label: 'Successful Donations',
-      value: overview ? overview.successfulDonations : '—',
-      context: 'Screened whole-blood units',
+      label: "Successful Donations",
+      value: overview ? overview.successfulDonations : "—",
+      context: "Screened whole-blood units",
     },
     {
-      label: 'Blood Requests Fulfilled',
-      value: overview ? overview.requestsFulfilled : '—',
-      context: 'Emergency & scheduled care',
+      label: "Blood Requests Fulfilled",
+      value: overview ? overview.requestsFulfilled : "—",
+      context: "Emergency & scheduled care",
     },
   ];
 
@@ -183,12 +185,18 @@ export default function Home() {
               </p>
               <h1
                 className="mt-3 max-w-xl font-bold tracking-tight text-slate-900"
-                style={{ fontSize: 'clamp(1.875rem, 4vw, 3.5rem)', lineHeight: 1.1, textWrap: 'balance' }}
+                style={{
+                  fontSize: "clamp(1.875rem, 4vw, 3.5rem)",
+                  lineHeight: 1.1,
+                  textWrap: "balance",
+                }}
               >
                 Give blood today. Keep every hospital ready.
               </h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-                Connect directly with verified donors, submit urgent hospital blood requests, and support safe transfusion reserves across 10 major Sri Lankan medical centers.
+                Connect directly with verified donors, submit urgent hospital
+                blood requests, and support safe transfusion reserves across 10
+                major Sri Lankan medical centers.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
@@ -227,7 +235,9 @@ export default function Home() {
                     onClick={() => setBgPlaying((prev) => !prev)}
                     className="rounded-md border border-slate-200 bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
                   >
-                    {bgPlaying ? 'Pause background motion' : 'Play background motion'}
+                    {bgPlaying
+                      ? "Pause background motion"
+                      : "Play background motion"}
                   </button>
                 ) : null}
               </div>
@@ -238,8 +248,12 @@ export default function Home() {
                 {heroImgFailed ? (
                   <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-red-50 via-white to-slate-100 p-8 text-center">
                     <HeartPulseIcon className="h-12 w-12 text-red-600" />
-                    <p className="mt-4 text-lg font-semibold text-slate-900">Clinical Blood Donation Network</p>
-                    <p className="mt-1 text-sm text-slate-600">Connecting donors and hospital transfusion units</p>
+                    <p className="mt-4 text-lg font-semibold text-slate-900">
+                      Clinical Blood Donation Network
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Connecting donors and hospital transfusion units
+                    </p>
                   </div>
                 ) : (
                   <img
@@ -261,9 +275,11 @@ export default function Home() {
                 key={stat.label}
                 className="rounded-xl border border-slate-200 bg-slate-50/70 p-5"
               >
-                <p className="text-sm font-medium text-slate-600">{stat.label}</p>
+                <p className="text-sm font-medium text-slate-600">
+                  {stat.label}
+                </p>
                 <p className="mt-2 font-mono text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
-                  {loading ? '...' : stat.value}
+                  {loading ? "..." : stat.value}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">{stat.context}</p>
               </div>
@@ -280,7 +296,8 @@ export default function Home() {
             How Blood Share coordinates every donation
           </h2>
           <p className="mt-3 text-base text-slate-600">
-            A structured three-step clinical workflow ensuring donor safety and rapid hospital matching.
+            A structured three-step clinical workflow ensuring donor safety and
+            rapid hospital matching.
           </p>
         </div>
 
@@ -290,9 +307,15 @@ export default function Home() {
               key={item.step}
               className="rounded-xl border border-slate-200 bg-white p-6"
             >
-              <p className="font-mono text-sm font-semibold text-red-600 tabular-nums">{item.step}</p>
-              <h3 className="mt-3 text-lg font-semibold text-slate-900">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+              <p className="font-mono text-sm font-semibold text-red-600 tabular-nums">
+                {item.step}
+              </p>
+              <h3 className="mt-3 text-lg font-semibold text-slate-900">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {item.description}
+              </p>
             </article>
           ))}
         </div>
@@ -303,7 +326,9 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm font-semibold text-red-600">Active Hospital Demand</p>
+              <p className="text-sm font-semibold text-red-600">
+                Active Hospital Demand
+              </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
                 Recent blood donation requests
               </h2>
@@ -320,14 +345,20 @@ export default function Home() {
           {loading ? (
             <div className="mt-8 grid gap-4 md:grid-cols-2">
               {[1, 2].map((skeleton) => (
-                <div key={skeleton} className="h-36 animate-pulse rounded-xl border border-slate-200 bg-slate-50" />
+                <div
+                  key={skeleton}
+                  className="h-36 animate-pulse rounded-xl border border-slate-200 bg-slate-50"
+                />
               ))}
             </div>
           ) : recentRequests.length === 0 ? (
             <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
-              <p className="text-sm font-medium text-slate-900">No open blood requests right now</p>
+              <p className="text-sm font-medium text-slate-900">
+                No open blood requests right now
+              </p>
               <p className="mt-1 text-sm text-slate-600">
-                All current hospital transfusion requests have been fulfilled. You can still register as a donor for future needs.
+                All current hospital transfusion requests have been fulfilled.
+                You can still register as a donor for future needs.
               </p>
               <Link
                 to="/register"
@@ -359,9 +390,11 @@ export default function Home() {
                         </div>
                       </div>
                       <StatusBadge
-                        variant={req.urgency === 'urgent' ? 'danger' : 'warning'}
-                        label={req.urgency === 'urgent' ? 'Urgent' : req.status}
-                        showIcon={req.urgency === 'urgent'}
+                        variant={
+                          req.urgency === "urgent" ? "danger" : "warning"
+                        }
+                        label={req.urgency === "urgent" ? "Urgent" : req.status}
+                        showIcon={req.urgency === "urgent"}
                       />
                     </div>
                   </div>
@@ -369,7 +402,7 @@ export default function Home() {
                   <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1.5 tabular-nums">
                       <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                      Required by {req.requiredDate || 'ASAP'}
+                      Required by {req.requiredDate || "ASAP"}
                     </span>
                     <Link
                       to="/register"
@@ -389,7 +422,9 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <p className="text-sm font-semibold text-red-600">Clinical Impact</p>
+            <p className="text-sm font-semibold text-red-600">
+              Clinical Impact
+            </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
               Why donate blood regularly
             </h2>
@@ -400,8 +435,12 @@ export default function Home() {
                     <DropletFillIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-slate-900">{point.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{point.description}</p>
+                    <h3 className="text-base font-semibold text-slate-900">
+                      {point.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                      {point.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -412,14 +451,20 @@ export default function Home() {
             <div className="rounded-2xl border border-slate-200 bg-white p-7">
               <div className="flex items-center gap-2.5 text-slate-900">
                 <ShieldCheckIcon className="h-5 w-5 text-emerald-600" />
-                <h3 className="text-lg font-semibold">Donor Eligibility Criteria</h3>
+                <h3 className="text-lg font-semibold">
+                  Donor Eligibility Criteria
+                </h3>
               </div>
               <p className="mt-2 text-sm text-slate-600">
-                Before registering, review the standard medical screening requirements for safe donation.
+                Before registering, review the standard medical screening
+                requirements for safe donation.
               </p>
               <ul className="mt-5 space-y-3.5">
                 {ELIGIBILITY_RULES.map((rule) => (
-                  <li key={rule} className="flex items-start gap-3 text-sm text-slate-700">
+                  <li
+                    key={rule}
+                    className="flex items-start gap-3 text-sm text-slate-700"
+                  >
                     <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                     <span>{rule}</span>
                   </li>
@@ -443,12 +488,15 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold text-red-600">Compatibility Reference</p>
+              <p className="text-sm font-semibold text-red-600">
+                Compatibility Reference
+              </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
                 Blood group donation matrix
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                Visual donor-to-recipient matching guide alongside compatible blood type rules.
+                Visual donor-to-recipient matching guide alongside compatible
+                blood type rules.
               </p>
             </div>
             {!bgVideoFailed ? (
@@ -457,14 +505,15 @@ export default function Home() {
                 onClick={() => setBgPlaying((prev) => !prev)}
                 className="self-start rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
-                {bgPlaying ? 'Pause Guide Video' : 'Play Guide Video'}
+                {bgPlaying ? "Pause Guide Video" : "Play Guide Video"}
               </button>
             ) : null}
           </div>
 
-          <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-12">
+          {/* The video sets the row height; the cards stretch to match it. */}
+          <div className="mt-8 grid gap-6 lg:grid-cols-12">
             {!bgVideoFailed ? (
-              <div className="flex items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-[#faf2ee] lg:col-span-4">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#faf2ee] lg:col-span-4">
                 <video
                   ref={guideVideoRef}
                   src={GUIDE_VIDEO_SRC}
@@ -475,29 +524,45 @@ export default function Home() {
                   preload="metadata"
                   aria-label="Animated blood donation compatibility guide showing donor and recipient blood types"
                   onError={() => setBgVideoFailed(true)}
-                  className="h-full max-h-[460px] w-full object-contain lg:max-h-[520px]"
+                  className="block h-auto w-full"
                 />
               </div>
             ) : null}
 
-            <div className={`grid gap-4 sm:grid-cols-2 ${!bgVideoFailed ? 'lg:col-span-8' : 'lg:col-span-12 lg:grid-cols-4'}`}>
+            <div
+              className={`grid gap-4 sm:grid-cols-2 ${
+                !bgVideoFailed
+                  ? "lg:col-span-8 lg:grid-rows-4"
+                  : "lg:col-span-12 lg:grid-cols-4"
+              }`}
+            >
               {BLOOD_COMPATIBILITY.map((group) => (
                 <div
                   key={group.type}
-                  className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-5"
+                  className="flex flex-col justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-2xl font-bold text-red-600">{group.type}</span>
+                    <span className="font-mono text-2xl font-bold text-red-600">
+                      {group.type}
+                    </span>
                     <BuildingIcon className="h-4 w-4 text-slate-400" />
                   </div>
-                  <dl className="mt-3 space-y-1.5 text-xs">
+                  <dl className="mt-2 grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <dt className="font-medium text-slate-500">Can give to</dt>
-                      <dd className="mt-0.5 font-medium text-slate-900">{group.give}</dd>
+                      <dt className="font-medium text-slate-500">
+                        Can give to
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-900">
+                        {group.give}
+                      </dd>
                     </div>
-                    <div className="pt-1">
-                      <dt className="font-medium text-slate-500">Can receive from</dt>
-                      <dd className="mt-0.5 font-medium text-slate-900">{group.receive}</dd>
+                    <div>
+                      <dt className="font-medium text-slate-500">
+                        Can receive from
+                      </dt>
+                      <dd className="mt-0.5 font-medium text-slate-900">
+                        {group.receive}
+                      </dd>
                     </div>
                   </dl>
                 </div>
@@ -511,7 +576,9 @@ export default function Home() {
       <section className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold text-red-600">Community & Hospital Voices</p>
+            <p className="text-sm font-semibold text-red-600">
+              Community & Hospital Voices
+            </p>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
               Trusted by clinicians and volunteer donors
             </h2>
@@ -523,9 +590,13 @@ export default function Home() {
                 key={item.name}
                 className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6"
               >
-                <p className="text-sm leading-relaxed text-slate-700">“{item.quote}”</p>
+                <p className="text-sm leading-relaxed text-slate-700">
+                  “{item.quote}”
+                </p>
                 <footer className="mt-5 border-t border-slate-100 pt-4">
-                  <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {item.name}
+                  </p>
                   <p className="mt-0.5 text-xs text-slate-500">{item.role}</p>
                 </footer>
               </blockquote>
