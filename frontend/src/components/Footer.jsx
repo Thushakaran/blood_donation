@@ -36,7 +36,7 @@ export default function Footer() {
                 <Link to="/about" className="transition-colors hover:text-red-600">About Network</Link>
               </li>
               <li>
-                <Link to="/admin" className="transition-colors hover:text-red-600">Admin Console</Link>
+                <Link to="/login" className="transition-colors hover:text-red-600">Coordinator Sign In</Link>
               </li>
             </ul>
           </div>

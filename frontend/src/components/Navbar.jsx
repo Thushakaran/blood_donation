@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { DropletFillIcon, MenuIcon, XIcon } from './Icons';
+import { useAuth } from '../context/AuthContext';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -8,11 +9,11 @@ const navLinks = [
   { to: '/need-blood', label: 'Request Blood' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
-  { to: '/admin', label: 'Admin' },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
@@ -47,6 +48,12 @@ export default function Navbar() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
+          <Link
+            to={isAdmin ? '/dashboard' : '/login'}
+            className="hidden shrink-0 whitespace-nowrap rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 sm:inline-flex"
+          >
+            {isAdmin ? 'Dashboard' : 'Sign In'}
+          </Link>
           <Link
             to="/register"
             className="hidden shrink-0 whitespace-nowrap rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 sm:inline-flex"
@@ -83,6 +90,13 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
+            <Link
+              to={isAdmin ? '/dashboard' : '/login'}
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              {isAdmin ? 'Dashboard' : 'Sign In'}
+            </Link>
             <Link
               to="/register"
               onClick={() => setOpen(false)}

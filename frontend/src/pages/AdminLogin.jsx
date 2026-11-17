@@ -86,10 +86,6 @@ export default function AdminLogin() {
             <span>{submitting ? 'Signing in...' : 'Sign In to Dashboard'}</span>
           </button>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-center text-xs text-slate-600">
-            Demo coordinator login: <span className="font-mono font-medium text-slate-900">admin</span> /{' '}
-            <span className="font-mono font-medium text-slate-900">admin123</span>
-          </div>
         </form>
       </div>
     </div>

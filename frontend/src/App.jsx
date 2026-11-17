@@ -27,7 +27,8 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Navigate to="/login" replace />} />
             <Route path="/register" element={<RegisterDonor />} />
             <Route path="/need-blood" element={<NeedBlood />} />
             <Route path="/search" element={<SearchDonors />} />
