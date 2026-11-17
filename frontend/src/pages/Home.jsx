@@ -41,7 +41,7 @@ const HOW_IT_WORKS = [
     step: "03",
     title: "Donate & Save Lives",
     description:
-      "Respond to urgent hospital blood requests or donate at any of our 10 connected medical centers.",
+      "Respond to urgent hospital blood requests or donate at any connected partner medical center.",
     Icon: HeartPulseIcon,
   },
 ];
@@ -117,6 +117,7 @@ function parseCompatibleTypes(value, selectedType) {
 export default function Home() {
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
+  const [liveHospitals, setLiveHospitals] = useState([]);
   const [searchBloodGroup, setSearchBloodGroup] = useState("All");
   const [searchDistrict, setSearchDistrict] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -147,12 +148,23 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    api
-      .publicOverview()
-      .then((data) => {
-        if (active) setOverview(data);
+    Promise.all([
+      api.publicOverview().catch(() => null),
+      api.publicHospitals().catch(() => []),
+    ])
+      .then(([overviewData, hospitalsData]) => {
+        if (!active) return;
+        if (overviewData) setOverview(overviewData);
+        const rawList = overviewData?.hospitals?.length
+          ? overviewData.hospitals
+          : hospitalsData;
+        if (Array.isArray(rawList) && rawList.length) {
+          const normalized = rawList
+            .map((item) => (typeof item === "string" ? item : item?.hospitalName))
+            .filter(Boolean);
+          if (normalized.length) setLiveHospitals(normalized);
+        }
       })
-      .catch(() => {})
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -161,7 +173,7 @@ export default function Home() {
     };
   }, []);
 
-  const hospitalNames = overview?.hospitals?.length ? overview.hospitals : HOSPITALS;
+  const hospitalNames = liveHospitals.length ? liveHospitals : HOSPITALS;
 
   const stats = [
     {
@@ -719,7 +731,9 @@ export default function Home() {
                     {item.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                    {item.description}
+                    {item.step === "03"
+                      ? `Respond to urgent hospital blood requests or donate at any of our ${hospitalNames.length} connected medical centers.`
+                      : item.description}
                   </p>
                 </article>
               );

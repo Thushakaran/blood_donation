@@ -28,10 +28,13 @@ export default function NeedBlood() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.publicHospitals().then((names) => {
-      if (Array.isArray(names) && names.length) {
-        setHospitals(names);
-        setForm((current) => ({ ...current, hospitalAddress: names.includes(current.hospitalAddress) ? current.hospitalAddress : names[0] }));
+    api.publicHospitals().then((rows) => {
+      if (Array.isArray(rows) && rows.length) {
+        const names = rows.map((item) => (typeof item === 'string' ? item : item?.hospitalName)).filter(Boolean);
+        if (names.length) {
+          setHospitals(names);
+          setForm((current) => ({ ...current, hospitalAddress: names.includes(current.hospitalAddress) ? current.hospitalAddress : names[0] }));
+        }
       }
     }).catch(() => {});
   }, []);

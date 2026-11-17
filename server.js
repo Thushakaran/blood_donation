@@ -330,6 +330,8 @@ const bloodStocks = HOSPITALS.map((hospitalName, index) => {
   return {
     id: index + 1,
     hospitalName,
+    address: `${hospitalName}, Sri Lanka`,
+    contactNumber: '0762971306',
     aPositive,
     aNegative,
     bPositive,
@@ -637,20 +639,62 @@ app.get('/api/public/overview', (_req, res) => {
     successfulDonations: successfulDonationsBaseline + donors.filter((d) => d.active).length,
     requestsFulfilled: fulfilledRequestsOffset + fulfilledCount,
     stockByGroup,
+    hospitals: bloodStocks.map((s) => s.hospitalName).sort(),
     recentRequests,
   });
 });
 
-// Public hospitals list
+// Public hospitals list (dynamic from active blood bank network)
 app.get('/api/public/hospitals', (_req, res) => {
-  return res.json(
-    HOSPITALS.map((hospitalName, idx) => ({
-      id: idx + 1,
-      hospitalName,
-      address: `${hospitalName}, Sri Lanka`,
-      contactNumber: '0762971306',
-    }))
-  );
+  return res.json(bloodStocks.map((s) => s.hospitalName).sort());
+});
+
+// Admin Hospital Management endpoints
+app.get('/api/hospitals', requireAdmin, (_req, res) => {
+  return res.json(bloodStocks);
+});
+
+app.post('/api/hospitals', requireAdmin, (req, res) => {
+  const hospitalName = String(req.body?.hospitalName || '').trim();
+  if (!hospitalName) {
+    return res.status(400).json({ message: 'hospitalName is required' });
+  }
+  if (bloodStocks.some((s) => s.hospitalName.toLowerCase() === hospitalName.toLowerCase())) {
+    return res.status(409).json({ message: 'Hospital already exists' });
+  }
+  const nextId = bloodStocks.reduce((max, s) => Math.max(max, s.id), 0) + 1;
+  const created = {
+    id: nextId,
+    hospitalName,
+    address: String(req.body?.address || '').trim(),
+    contactNumber: String(req.body?.contactNumber || '').trim(),
+    aPositive: 0,
+    aNegative: 0,
+    bPositive: 0,
+    bNegative: 0,
+    abPositive: 0,
+    abNegative: 0,
+    oPositive: 0,
+    oNegative: 0,
+  };
+  bloodStocks.push(created);
+  addActivity('stock', 'New hospital added', `${created.hospitalName} joined the network`);
+  return res.json(created);
+});
+
+app.put('/api/hospitals/:hospitalName', requireAdmin, (req, res) => {
+  const targetName = decodeURIComponent(req.params.hospitalName || '');
+  const hospital = bloodStocks.find((s) => s.hospitalName === targetName);
+  if (!hospital) {
+    return res.status(404).json({ message: 'Hospital not found' });
+  }
+  if (req.body && 'address' in req.body) {
+    hospital.address = String(req.body.address || '').trim();
+  }
+  if (req.body && 'contactNumber' in req.body) {
+    hospital.contactNumber = String(req.body.contactNumber || '').trim();
+  }
+  return res.json(hospital);
 });
 
 // Auth endpoints
@@ -687,7 +731,7 @@ app.get('/api/notifications', requireAdmin, (_req, res) => {
     ...lowStockGroups.map((g, i) => ({
       id: 100 + i,
       title: `${g.bloodGroup} network stock is ${g.status.toLowerCase()}`,
-      detail: `${g.units} total units remaining across 10 hospitals`,
+      detail: `${g.units} total units remaining across ${bloodStocks.length} hospitals`,
       severity: g.status === 'Critical' ? 'critical' : 'warning',
       active: true,
       seen: false,
@@ -742,7 +786,7 @@ app.get('/api/dashboard/analytics', requireAdmin, (_req, res) => {
       id: `stock-${g.bloodGroup}`,
       severity: g.status === 'Critical' ? 'critical' : 'warning',
       title: `${g.bloodGroup} network stock is ${g.status.toLowerCase()}`,
-      detail: `${g.units} total units remaining across 10 hospitals`,
+      detail: `${g.units} total units remaining across ${bloodStocks.length} hospitals`,
       to: '/dashboard/stock',
     });
   }

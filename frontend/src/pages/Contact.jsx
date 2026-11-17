@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api';
 import FormField, { inputClass } from '../components/FormField';
 import { HOSPITALS } from '../constants';
@@ -7,10 +7,24 @@ import { CheckCircleIcon, MailIcon, MapPinIcon, PhoneIcon } from '../components/
 const empty = { fullName: '', phoneNumber: '', email: '', hospital: HOSPITALS[0], message: '' };
 
 export default function Contact() {
+  const [hospitals, setHospitals] = useState(HOSPITALS);
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState({ type: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api.publicHospitals().then((rows) => {
+      if (!active || !Array.isArray(rows) || !rows.length) return;
+      const names = rows.map((item) => (typeof item === 'string' ? item : item?.hospitalName)).filter(Boolean);
+      if (names.length) {
+        setHospitals(names);
+        setForm((current) => ({ ...current, hospital: names.includes(current.hospital) ? current.hospital : names[0] }));
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -113,7 +127,7 @@ export default function Contact() {
                 value={form.hospital}
                 onChange={(e) => update('hospital', e.target.value)}
               >
-                {HOSPITALS.map((hospital) => (
+                {hospitals.map((hospital) => (
                   <option key={hospital}>{hospital}</option>
                 ))}
               </select>

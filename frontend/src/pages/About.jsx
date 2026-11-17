@@ -1,26 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '../api';
 import bloodLabImg from '../assets/images/blood_bank_lab_1794828547381.jpg';
 import { HOSPITALS } from '../constants';
 import { BuildingIcon, CheckCircleIcon, HeartPulseIcon, ShieldCheckIcon } from '../components/Icons';
 
-const PILLARS = [
-  {
-    title: 'Multi-Stage Pathogen & Compatibility Screening',
-    detail: 'Every collected unit undergoes ABO/Rh typing and comprehensive serological testing before release to hospital wards.',
-  },
-  {
-    title: 'Temperature-Controlled Component Storage',
-    detail: 'Whole blood is separated into red cells, fresh frozen plasma, and platelets under strict cold-chain telemetry.',
-  },
-  {
-    title: 'Inter-Hospital Rapid Dispatch',
-    detail: 'Real-time visibility across 10 partner hospitals ensures rare blood types like O- and AB- reach emergencies quickly.',
-  },
-];
-
 export default function About() {
+  const [hospitals, setHospitals] = useState(HOSPITALS);
   const [labImgFailed, setLabImgFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api
+      .publicHospitals()
+      .then((rows) => {
+        if (!active || !Array.isArray(rows) || !rows.length) return;
+        const normalized = rows
+          .map((item) => (typeof item === 'string' ? item : item?.hospitalName))
+          .filter(Boolean);
+        if (normalized.length) setHospitals(normalized);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const pillars = [
+    {
+      title: 'Multi-Stage Pathogen & Compatibility Screening',
+      detail: 'Every collected unit undergoes ABO/Rh typing and comprehensive serological testing before release to hospital wards.',
+    },
+    {
+      title: 'Temperature-Controlled Component Storage',
+      detail: 'Whole blood is separated into red cells, fresh frozen plasma, and platelets under strict cold-chain telemetry.',
+    },
+    {
+      title: 'Inter-Hospital Rapid Dispatch',
+      detail: `Real-time visibility across ${hospitals.length} partner hospitals ensures rare blood types like O- and AB- reach emergencies quickly.`,
+    },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -61,7 +80,7 @@ export default function About() {
             We collect, test, and store donations with rigorous clinical oversight, ensuring blood is always available to patients in need. From red blood cells to plasma and platelets, our partner facilities prepare and distribute essential components supporting trauma surgery, maternity care, and chronic hematology treatments.
           </p>
           <ul className="mt-6 space-y-3">
-            {PILLARS.map((item) => (
+            {pillars.map((item) => (
               <li key={item.title} className="flex items-start gap-3">
                 <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <div>
@@ -93,12 +112,12 @@ export default function About() {
           <div>
             <h2 className="text-xl font-bold text-slate-900">Connected Partner Hospitals</h2>
             <p className="mt-1 text-sm text-slate-600">
-              10 major regional and teaching hospitals sharing unified blood inventory visibility.
+              {hospitals.length} regional and teaching hospitals sharing unified blood inventory visibility.
             </p>
           </div>
         </div>
         <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {HOSPITALS.map((hospital) => (
+          {hospitals.map((hospital) => (
             <div
               key={hospital}
               className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 transition-colors hover:border-slate-300 hover:bg-white"

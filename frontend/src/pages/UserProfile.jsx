@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 export default function UserProfile() {
   const { user } = useAuth();
   const avatarStorageKey = `bloodShareAvatar:${user || 'default'}`;
+  const [hospitals, setHospitals] = useState(HOSPITALS);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -18,12 +19,17 @@ export default function UserProfile() {
 
   useEffect(() => {
     let active = true;
-    api
-      .getProfile()
-      .then((data) => {
-        if (active) {
-          const savedAvatar = localStorage.getItem(avatarStorageKey);
-          setProfile({ ...data, avatarUrl: savedAvatar || data.avatarUrl || '' });
+    Promise.all([
+      api.getProfile(),
+      api.publicHospitals().catch(() => []),
+    ])
+      .then(([data, hospitalRows]) => {
+        if (!active) return;
+        const savedAvatar = localStorage.getItem(avatarStorageKey);
+        setProfile({ ...data, avatarUrl: savedAvatar || data.avatarUrl || '' });
+        if (Array.isArray(hospitalRows) && hospitalRows.length) {
+          const names = hospitalRows.map((item) => (typeof item === 'string' ? item : item?.hospitalName)).filter(Boolean);
+          if (names.length) setHospitals(names);
         }
       })
       .catch(() => {})
@@ -232,7 +238,7 @@ export default function UserProfile() {
                   value={profile.hospital}
                   onChange={(e) => setProfile({ ...profile, hospital: e.target.value })}
                 >
-                  {HOSPITALS.map((h) => (
+                  {hospitals.map((h) => (
                     <option key={h}>{h}</option>
                   ))}
                 </select>

@@ -25,8 +25,10 @@ public class PublicController {
     }
     @GetMapping("/overview")
     public Map<String, Object> overview() {
-        var stockByGroup = BloodStockTotals.byGroup(stock.findAll());
+        var allStocks = stock.findAll();
+        var stockByGroup = BloodStockTotals.byGroup(allStocks);
         long units = BloodStockTotals.total(stockByGroup);
+        var hospitalNames = allStocks.stream().map(row -> row.getHospitalName()).sorted().toList();
         var allRequests = requests.findAll();
         var recent = allRequests.stream()
                 .filter(r -> !"Fulfilled".equalsIgnoreCase(r.getStatus()))
@@ -39,7 +41,7 @@ public class PublicController {
                         r.getHospitalAddress(), r.getReason(), r.getRequiredDate(), r.getUrgency(), r.getStatus()))
                 .toList();
         long fulfilled = allRequests.stream().filter(r -> "Fulfilled".equalsIgnoreCase(r.getStatus())).count();
-        return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "stockByGroup", stockByGroup, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
+        return Map.of("totalDonors", donors.count(), "activeDonors", donors.countByActiveTrue(), "availableUnits", units, "stockByGroup", stockByGroup, "hospitals", hospitalNames, "successfulDonations", 0L, "requestsFulfilled", fulfilled, "recentRequests", recent);
     }
 
     private static int urgencyRank(String urgency) {
